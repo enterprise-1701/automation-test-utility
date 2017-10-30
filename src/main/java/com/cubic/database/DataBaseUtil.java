@@ -1,0 +1,326 @@
+package com.cubic.database;
+ 
+import org.apache.log4j.Logger;
+
+import com.cubic.genericutils.GenericConstants;
+import com.cubic.logutils.Log4jUtil;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Hashtable;
+ 
+public class DataBaseUtil {
+	
+	private final Logger LOG = Logger.getLogger(this.getClass().getName());
+
+	public Connection connection = null;
+	private Statement statement = null;
+	private ResultSet resultSet = null;
+    private Hashtable<String , String> propTable = GenericConstants.GENERIC_FW_CONFIG_PROPERTIES;
+    
+   /** 
+    *  Connects to the required database 
+    *  
+    *  @param dbName Name Of DataBase
+    */ 
+    private DataBaseUtil(String dbName){
+    	connection = getDBConnection(dbName);
+    }
+     
+    /**
+     * Gets the connection Objects of Required DataBase
+     * 
+     * @param dbName Name Of DataBase (eg : mysql,msaccess,oracle and sqldeveloper)
+	 * @return dataBaseUtil object which holds the connection object
+     */
+    public static DataBaseUtil getDatabaseConnection(String dbName){
+    	DataBaseUtil dataBaseUtil = new DataBaseUtil(dbName);
+    	if (dataBaseUtil.connection ==null) {
+    		dataBaseUtil = null;
+		}
+    	return dataBaseUtil;
+    }
+     
+    /**
+     * Parameterized Constructor
+     * @param dbName
+     * @param dbHost
+     * @param dbUsername
+     * @param dbPassword
+     * @param dbMsAccessPath
+     */
+     private DataBaseUtil(String dbName, String dbUrl, String dbUsername, String dbPassword, String dbMsAccessPath) {
+            connection = getDBConnection(dbName, dbUrl, dbUsername, dbPassword, dbMsAccessPath);
+       }
+     
+     /**
+      * OVERLOADED getDatabaseConnection()
+      * Takes all connectivity parameters
+      * @param dbName
+      * @param dbHost
+      * @param dbUsername
+      * @param dbPassword
+      * @param dbMsAccessPath
+      * @return
+      */
+     public static DataBaseUtil getDatabaseConnection(String dbName, String dbUrl, String dbUsername, String dbPassword, String dbMsAccessPath){
+         DataBaseUtil dataBaseUtil = new DataBaseUtil(dbName, dbUrl, dbUsername, dbPassword, dbMsAccessPath);
+         return dataBaseUtil;
+     }
+     
+     /**
+      * OVERLOADED getDBConnection()
+      * @param dbName
+      * @param dbHost
+      * @param dbUsername
+      * @param dbPassword
+      * @param dbMsAccessPath
+      * @return
+      */
+     private Connection getDBConnection(String dbName, String dbUrl, String dbUsername, String dbPassword, String dbMsAccessPath){
+         LOG.info("+++++++++Inside getDB Connection+++++++++++++++++");
+         try {
+             if (dbName.equalsIgnoreCase(GenericConstants.MSACCESS)) {
+                 connection = DriverManager.getConnection("jdbc:ucanaccess:" + dbMsAccessPath);
+             } 
+             else {
+                 // Get driver
+                 if (dbName.equalsIgnoreCase(GenericConstants.MYSQL)) {
+                     Class.forName(propTable.get("mysql_driverName"));
+                 }
+                 else if (dbName.equalsIgnoreCase(GenericConstants.ORACLE)) {
+                     Class.forName(propTable.get("oracle_driverName"));
+                 }
+                 else if (dbName.equalsIgnoreCase(GenericConstants.SQLDEVELOPER)) {
+                     Class.forName(propTable.get("sqldeveloper_driverName"));
+                 }
+                 
+                 // Setup connection
+                 LOG.info("DB URL = " + dbUrl);
+                 connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             }
+                 
+             LOG.info("+++++++++ DB Connection Established+++++++++++++++++");
+             statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
+             LOG.info("+++++++++ Statement Established+++++++++++++++++");
+         }
+         catch (Exception e) {
+             LOG.error(Log4jUtil.getStackTrace(e));
+         }
+         
+         return connection;
+     }     
+     
+    /**
+     * Provides DB connection to a specific database
+     * 
+     * @param dbName indicates the name of database (eg : mysql,msaccess,oracle and sqldeveloper)
+     * @return connection holds the required DB connection
+     */
+    private Connection getDBConnection(String dbName){
+    	LOG.info("+++++++++Inside getDB Connection+++++++++++++++++");
+		try{
+			
+			if(dbName.equalsIgnoreCase(GenericConstants.MSACCESS)){
+				connection=DriverManager.getConnection("jdbc:ucanaccess:"+propTable.get("msaccess_dbLocationPath"));
+			}else if(dbName.equalsIgnoreCase(GenericConstants.MYSQL)){
+				Class.forName(propTable.get("mysql_driverName"));
+				connection=DriverManager.getConnection(propTable.get("mysql_dbURL"), propTable.get("mysql_username"), propTable.get("mysql_password"));
+			}else if(dbName.equalsIgnoreCase(GenericConstants.ORACLE)){
+				Class.forName(propTable.get("oracle_driverName"));
+				connection=DriverManager.getConnection(propTable.get("oracle_dbURL"), propTable.get("oracle_username"), propTable.get("oracle_Password"));
+			}else if(dbName.equalsIgnoreCase(GenericConstants.SQLDEVELOPER)){
+				Class.forName(propTable.get("sqldeveloper_driverName"));
+				connection=DriverManager.getConnection(propTable.get("sqldeveloper_dbURL"), propTable.get("sqldeveloper_username"), propTable.get("sqldeveloper_password"));
+			}
+			else if(dbName.equalsIgnoreCase(GenericConstants.SQLSERVER)){
+				Class.forName(propTable.get("sqlserver_driverName"));
+				connection=DriverManager.getConnection(propTable.get("sqlserver_dbURL"), propTable.get("sqlserver_username"), propTable.get("sqlserver_password"));
+			}
+			LOG.info("+++++++++ DB Connection Established+++++++++++++++++");
+			statement = connection.createStatement();
+			LOG.info("+++++++++ Statement Established+++++++++++++++++");
+		}catch(Exception e){
+			e.printStackTrace();
+			LOG.error(Log4jUtil.getStackTrace(e));
+		}
+		return connection;
+	}
+    
+    /**
+     * Executes the given SQL statement (only SELECT ) 
+     * 
+     * @param query indicates select query Of Type String
+     * @return ResultSet holds the table data
+     */
+	public ResultSet retrieveData(String query){
+		try{
+			LOG.info("Query: " + query);
+			resultSet = statement.executeQuery(query);
+	    }catch(Exception e){
+	    	LOG.error(Log4jUtil.getStackTrace(e));
+		}
+		return resultSet;
+	}
+	
+	 /**
+     * Retrieves an int value from the given query's result set, column and row number
+     * @param dbQuery
+     * @param colName
+     * @param rowNum
+     * @return
+     */
+    public int getIntQuery(String dbQuery, String colName, int rowNum) {
+        // #### Send Query and Extract Value
+        ResultSet rs = retrieveData(dbQuery);
+        int retVal = 0;
+        int origRowNum = rowNum;
+        
+        try {
+            // Get to the row desired
+            while (rowNum > 0) {
+                rs.next();
+                --rowNum;
+            }
+            
+            retVal = rs.getInt(colName);
+            LOG.info("row: " + origRowNum + ", column: " + colName + ", value: " + retVal + "\n");
+            
+            // "Rewind" - Set SQL ResultSet cursor back to the beginning for subsequent value fetching (by row)
+            rs.beforeFirst();
+        }
+        catch (SQLException e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+            closeConnection();      // Close only on exception
+        }
+        
+        return retVal;
+    }
+    
+    /**
+     * Retrieves a long value from the given query's result set, column and row number
+     * @param dbQuery
+     * @param colName
+     * @param rowNum
+     * @return
+     */
+    public long getLongQuery(String dbQuery, String colName, int rowNum) {
+        // #### Send Query and Extract Value
+        ResultSet rs = retrieveData(dbQuery);
+        long retVal = 0;
+        int origRowNum = rowNum;
+        
+        try {
+            // Get to the row desired
+            while (rowNum > 0) {
+                rs.next();
+                --rowNum;
+            }
+            
+            retVal = rs.getLong(colName);
+            LOG.info("row: " + origRowNum + ", column: " + colName + ", value: " + retVal + "\n");
+            
+            // "Rewind" - Set SQL ResultSet cursor back to the beginning for subsequent value fetching (by row)
+            rs.beforeFirst();
+        }
+        catch (SQLException e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+            closeConnection();      // Close only on exception
+        }
+        
+        return retVal;
+    }
+    
+    /**
+     * Retrieves a String value from the given query's result set, column and row number
+     * @param dbQuery
+     * @param colName
+     * @param rowNum
+     * @return
+     */
+    public String getStringQuery(String dbQuery, String colName, int rowNum) {
+        // #### Send Query and Extract Value
+        ResultSet rs = retrieveData(dbQuery);
+        String retVal = "";
+        int origRowNum = rowNum;
+        
+        try {
+            // Get to the row desired
+            while (rowNum > 0) {
+                rs.next();
+                --rowNum;
+            }
+            
+            retVal = rs.getString(colName);
+            LOG.info("row: " + origRowNum + ", column: " + colName + ", value: " + retVal + "\n");
+            
+            // "Rewind" - Set SQL ResultSet cursor back to the beginning for subsequent value fetching (by row)
+            rs.beforeFirst();
+        }
+        catch (SQLException e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+            closeConnection();      // Close only on exception
+        }
+        
+        return retVal;
+    }    
+    
+	/**
+	 * Executes the given SQL statement (only INSERT, UPDATE, or DELETE ) 
+	 * 
+	 * @param query DBQuery of type String (Only Create,Update and Delete)
+	 * @return int value states the success of operation
+	 */
+	public int selectQuery(String query){
+		int value=0;
+		try{
+			 LOG.info("Query: " + query);
+			 value = statement.executeUpdate(query);			
+		}catch(Exception e){
+			LOG.error(Log4jUtil.getStackTrace(e));
+		}
+		return value;
+	}
+	
+    /**
+     * Checks if given result set is empty or not
+     * @param rs - Result Set
+     * @return
+     */
+    public boolean isEmptyResultSet(ResultSet rs) {
+        boolean retVal = true;
+        
+        try {
+            retVal = !rs.isBeforeFirst();           // Check for "empty"
+            LOG.info("Result Set empty: " + retVal + "\n");
+        }
+        catch (Exception e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+            closeConnection();
+        }
+        
+        return retVal;
+    }
+    
+	public void closeConnection(){
+		try{
+
+			if(statement!=null){
+				statement.close();
+				statement = null;
+			}
+			if(resultSet!=null){
+				resultSet.close();
+			}
+			if(connection!=null){
+				connection.close();
+				 connection = null;
+			}
+		}catch(SQLException e){
+			LOG.error(Log4jUtil.getStackTrace(e));
+		}
+	}
+}
