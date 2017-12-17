@@ -182,7 +182,8 @@ public class TestRailUtil {
 			for(int i=0;i<tests.size();i++){
 				test=(JSONObject)tests.get(i);
 				String testTitle=(String)test.get("title");
-				if(testTitle.contains(tcID)){
+				String test_Rail_Test_Case_ID =  String.valueOf(test.get("case_id"));
+				if(testTitle.contains(tcID) || test_Rail_Test_Case_ID.equals(tcID)){
 					updateResultOfTestID(test.get("id").toString(), tcStatus);
 				}
 			}
