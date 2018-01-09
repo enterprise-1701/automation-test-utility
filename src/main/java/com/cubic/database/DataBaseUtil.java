@@ -128,15 +128,18 @@ public class DataBaseUtil {
                  else if (dbName.equalsIgnoreCase(GenericConstants.SQLDEVELOPER)) {
                      Class.forName(propTable.get("sqldeveloper_driverName"));
                  }
+                 else if(dbName.equalsIgnoreCase(GenericConstants.SQLSERVER)){
+                     Class.forName(propTable.get("sqlserver_driverName"));
+                 }
                  
                  // Setup connection, but check for database Role (internal_logon) first
                  LOG.info("DB URL = " + dbUrl);
                  if (dbRole == null || dbRole.isEmpty()) {
-                     LOG.info("+++++++++ DB Role null or empty -- do not use +++++++++++++++++");
+                     LOG.info("+++++++++ DB Role not used +++++++++++++++++");
                      connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
                  }
                  else {
-                     LOG.info("+++++++++ DB Role NOT empty: " + dbRole + " +++++++++++++++++");
+                     LOG.info("+++++++++ DB Role: " + dbRole + " +++++++++++++++++");
                      prop = new Properties();
                      
                      prop.put("user", dbUsername);
