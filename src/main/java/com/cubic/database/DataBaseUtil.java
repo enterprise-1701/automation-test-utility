@@ -132,13 +132,10 @@ public class DataBaseUtil {
                      Class.forName(propTable.get("sqlserver_driverName"));
                  }
                  
-                 // Setup connection, but check for database Role (internal_logon) first
+                 // Setup connection, but check for database Role (internal_logon) in case of ORACLE
                  LOG.info("DB URL = " + dbUrl);
-                 if (dbRole == null || dbRole.isEmpty()) {
-                     LOG.info("+++++++++ DB Role not used +++++++++++++++++");
-                     connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
-                 }
-                 else {
+                 if (dbName.equalsIgnoreCase(GenericConstants.ORACLE) && !(dbRole == null || dbRole.isEmpty())) {
+                     // DB Role only applies to ORACLE
                      LOG.info("+++++++++ DB Role: " + dbRole + " +++++++++++++++++");
                      prop = new Properties();
                      
@@ -146,6 +143,9 @@ public class DataBaseUtil {
                      prop.put("password", dbPassword);
                      prop.put("internal_logon", dbRole);
                      connection = DriverManager.getConnection(dbUrl, prop);
+                 }
+                 else {
+                     connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
                  }
              }
                  
