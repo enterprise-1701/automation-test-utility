@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Hashtable;
+import java.util.Properties;
  
 public class DataBaseUtil {
 	
@@ -57,6 +58,19 @@ public class DataBaseUtil {
        }
      
      /**
+      * Overloaded Parameterized Constructor
+      * @param dbName
+      * @param dbUrl
+      * @param dbUsername
+      * @param dbPassword
+      * @param dbRole
+      * @param dbMsAccessPath
+      */
+     private DataBaseUtil(String dbName, String dbUrl, String dbUsername, String dbPassword, String dbRole, String dbMsAccessPath) {
+         connection = getDBConnection(dbName, dbUrl, dbUsername, dbPassword, dbRole, dbMsAccessPath);
+     }
+     
+     /**
       * OVERLOADED getDatabaseConnection()
       * Takes all connectivity parameters
       * @param dbName
@@ -72,6 +86,21 @@ public class DataBaseUtil {
      }
      
      /**
+      * OVERLOADED getDatabaseConnection() -- To include Database Role or internal_logon (e.g. SYSDBA)
+      * @param dbName
+      * @param dbUrl
+      * @param dbUsername
+      * @param dbPassword
+      * @param dbRole
+      * @param dbMsAccessPath
+      * @return
+      */
+     public static DataBaseUtil getDatabaseConnection(String dbName, String dbUrl, String dbUsername, String dbPassword, String dbRole, String dbMsAccessPath){
+         DataBaseUtil dataBaseUtil = new DataBaseUtil(dbName, dbUrl, dbUsername, dbPassword, dbRole, dbMsAccessPath);
+         return dataBaseUtil;
+     }
+     
+     /**
       * OVERLOADED getDBConnection()
       * @param dbName
       * @param dbHost
@@ -80,9 +109,11 @@ public class DataBaseUtil {
       * @param dbMsAccessPath
       * @return
       */
-     private Connection getDBConnection(String dbName, String dbUrl, String dbUsername, String dbPassword, String dbMsAccessPath){
+     private Connection getDBConnection(String dbName, String dbUrl, String dbUsername, String dbPassword, String dbRole, String dbMsAccessPath){
          LOG.info("+++++++++Inside getDB Connection+++++++++++++++++");
          try {
+             Properties prop = null;
+             
              if (dbName.equalsIgnoreCase(GenericConstants.MSACCESS)) {
                  connection = DriverManager.getConnection("jdbc:ucanaccess:" + dbMsAccessPath);
              } 
@@ -97,10 +128,25 @@ public class DataBaseUtil {
                  else if (dbName.equalsIgnoreCase(GenericConstants.SQLDEVELOPER)) {
                      Class.forName(propTable.get("sqldeveloper_driverName"));
                  }
+                 else if(dbName.equalsIgnoreCase(GenericConstants.SQLSERVER)){
+                     Class.forName(propTable.get("sqlserver_driverName"));
+                 }
                  
-                 // Setup connection
+                 // Setup connection, but check for database Role (internal_logon) in case of ORACLE
                  LOG.info("DB URL = " + dbUrl);
-                 connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+                 if (dbName.equalsIgnoreCase(GenericConstants.ORACLE) && !(dbRole == null || dbRole.isEmpty())) {
+                     // DB Role only applies to ORACLE
+                     LOG.info("+++++++++ DB Role: " + dbRole + " +++++++++++++++++");
+                     prop = new Properties();
+                     
+                     prop.put("user", dbUsername);
+                     prop.put("password", dbPassword);
+                     prop.put("internal_logon", dbRole);
+                     connection = DriverManager.getConnection(dbUrl, prop);
+                 }
+                 else {
+                     connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+                 }
              }
                  
              LOG.info("+++++++++ DB Connection Established+++++++++++++++++");
@@ -112,6 +158,19 @@ public class DataBaseUtil {
          }
          
          return connection;
+     }
+     
+     /**
+      * OVERLOADED getDBConnection()
+      * @param dbName
+      * @param dbHost
+      * @param dbUsername
+      * @param dbPassword
+      * @param dbMsAccessPath
+      * @return
+      */
+     private Connection getDBConnection(String dbName, String dbUrl, String dbUsername, String dbPassword, String dbMsAccessPath){
+         return getDBConnection(dbName, dbUrl, dbUsername, dbPassword, null, dbMsAccessPath);
      }     
      
     /**
