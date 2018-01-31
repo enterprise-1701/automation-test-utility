@@ -47,6 +47,7 @@ public class JsonUtil {
 		}
 		catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
 		}
 		return actualVal;
 	}
@@ -54,8 +55,6 @@ public class JsonUtil {
 	public synchronized static Object getJsonObject(String jsonData, String jsonPathExpression) throws Throwable {
 		LOG.info("Class name : " + getCallerClassName() + "Method name : " + getCallerMethodName());
 
-		JSONArray jsonArray = null;
-		String actualVal = null;
 		Object object = null;
 		try {
 			Object document = Configuration.defaultConfiguration().jsonProvider().parse(jsonData);
@@ -69,6 +68,7 @@ public class JsonUtil {
 		}
 		catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
 		}
 		return object;
 	}
@@ -96,6 +96,7 @@ public class JsonUtil {
 		}
 		catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
 		}
 		return actualVal;
 	}
@@ -122,6 +123,7 @@ public class JsonUtil {
 
 		} catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
 		}
 		return jsonArray;
 	}	
@@ -173,6 +175,7 @@ public class JsonUtil {
 
 		} catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
 		}
 		return size;
 	}
@@ -210,6 +213,7 @@ public class JsonUtil {
 
         } catch (Exception e) {
             LOG.error(Log4jUtil.getStackTrace(e));
+            throw e;
         }
 
         return results;
