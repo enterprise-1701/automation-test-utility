@@ -7,6 +7,8 @@ import java.util.Date;
 import java.util.TimeZone;
 import org.apache.log4j.Logger;
 
+import com.cubic.logutils.Log4jUtil;
+
 
 public abstract class DateUtil {
 	
@@ -44,8 +46,14 @@ public abstract class DateUtil {
 	 * @throws Throwable the throwable
 	 */
 	public static int getYear(int number) throws Throwable {
-		Calendar cal = Calendar.getInstance();
-		int year = cal.get(Calendar.YEAR) + number;
+		int year = 0;
+		try{
+			Calendar cal = Calendar.getInstance();
+			year = cal.get(Calendar.YEAR) + number;
+		}catch (Exception e) {
+			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
+		}
 		
 		return year;
 	}
@@ -103,9 +111,17 @@ public abstract class DateUtil {
 	 * @throws Throwable the throwable
 	 */
 	public static String getCurrentDateTime(String dateTimeFormat) throws Throwable {
-		DateFormat dateFormat = new SimpleDateFormat(dateTimeFormat);
-		Date date = new Date();
-		return dateFormat.format(date);
+		String afterDateFormat = null;
+		try{
+			DateFormat dateFormat = new SimpleDateFormat(dateTimeFormat);
+			Date date = new Date();
+			afterDateFormat = dateFormat.format(date);
+		}catch (Exception e) {
+			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
+		}
+		
+		return afterDateFormat;
 	}
 	
 	/**
@@ -117,11 +133,19 @@ public abstract class DateUtil {
 	 * @throws Throwable the throwable
 	 */
 	public static String getFutureDateTime(String dateTimeFormat, int days) throws Throwable {
-		SimpleDateFormat sdf = new SimpleDateFormat(dateTimeFormat);
-		Calendar calendar = Calendar.getInstance();
-		calendar.add(Calendar.DAY_OF_YEAR, days);
-		Date tomorrow = calendar.getTime();
-		return sdf.format(tomorrow);
+		String afterDateFormat = null;
+		try{
+			SimpleDateFormat sdf = new SimpleDateFormat(dateTimeFormat);
+			Calendar calendar = Calendar.getInstance();
+			calendar.add(Calendar.DAY_OF_YEAR, days);
+			Date tomorrow = calendar.getTime();
+			afterDateFormat = sdf.format(tomorrow);
+		}catch (Exception e) {
+			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
+		}
+		
+		return afterDateFormat;
 	}
 	
 	/**
@@ -304,4 +328,75 @@ public abstract class DateUtil {
             // Generate Today's timestamp (UTC/GMT)
             return getFormattedDate(createNowMillisec(), GenericConstants.DATE_FORMAT_ZULU, GenericConstants.TIMEZONE_UTC);
         }		
+        
+        /**
+         * getPastFutureDateTime: Function to get future or past date from the current date in the required format.
+         * 
+         * @param dateTimeFormat of (String), format to get date and time (e.g: MM/dd/yyyy)
+         * @param days of (int), number to get date E.g. 1:Tomorrow date, -1:Yesterday date
+         * @return : String value of past or future date and time in require format
+         * @throws Throwable the throwable
+         */
+         public static String getPastFutureMonthFromDate(String dateTimeFormat, int months) throws Throwable {
+    	 	 	String dateAfterFormat = null;
+        	 
+        	 	try{
+                    // set the appropriate dateTimeFormat
+        	 		SimpleDateFormat sdf = new SimpleDateFormat(dateTimeFormat);
+                    
+                    // new instance of calendar object
+                    Calendar calendar = Calendar.getInstance();
+                    
+                    // state the decrement / increment in months for your calendar object
+                    calendar.add(Calendar.MONTH, months);
+                    
+                    // get the current time after time removed / added
+                    Date pastFutureMonthDate = calendar.getTime();
+        	 	
+                    // return the new date formatted as defined by your specified format
+                    dateAfterFormat = sdf.format(pastFutureMonthDate); 
+        	 	}catch (Exception e) {
+        			LOG.error(Log4jUtil.getStackTrace(e));
+        			throw e;
+        		}
+               
+                return dateAfterFormat;
+         }
+
+         /**
+          * getPastFutureDayMonthFromDate: Function to get future or past date from the current date in the required format by specifying a day then month to go back or forward in time.
+          * 
+          * @param dateTimeFormat of (String), format to get date and time (e.g: dd/MM/yyyy)
+          * @param days of (int), number to get date E.g. 1:Tomorrow date, -1:Yesterday date
+          * @param months of (int), number to get date E.g. 1:Future Month date, -1:Last month date
+          * @return : String value of past or future date and time in the required format
+          * @throws Throwable the throwable
+          */
+          public static String getPastFutureDayMonthFromDate(String dateTimeFormat, int days, int months) throws Throwable {
+        	  	String dateAfterFormat = null;
+
+        	  	try{
+                    // set the appropriate dateTimeFormat
+                    SimpleDateFormat sdf = new SimpleDateFormat(dateTimeFormat);
+                   
+                    // new instance of calendar object
+                    Calendar calendar = Calendar.getInstance();
+                    
+                    // state the decrement / increment in days for your calendar object
+                    calendar.add(Calendar.DATE, days);
+                    calendar.add(Calendar.MONTH, months);
+                    
+                    // get the current time after time removed / added
+                    Date pastFutureDayMonthDate = calendar.getTime();
+                    
+                    // return the new date formatted as defined by your specified format
+                    dateAfterFormat =sdf.format(pastFutureDayMonthDate);
+                    
+        	  	}catch (Exception e) {
+        			LOG.error(Log4jUtil.getStackTrace(e));
+        			throw e;
+        		}
+        	  
+                 return dateAfterFormat;
+          }        
 }
