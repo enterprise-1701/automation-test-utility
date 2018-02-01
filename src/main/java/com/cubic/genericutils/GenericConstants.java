@@ -42,6 +42,7 @@ public interface GenericConstants {
 	String ORACLE = "oracle";
 	String SQLDEVELOPER = "sqldeveloper";
 	String SQLSERVER = "sqlserver";
+	String POSTGRESQL = "postgresql";
 	
 	//Below are the constants for Log4j
 	String LOG4J_FILEPATH = GENERIC_FW_CONFIG_PROPERTIES.get("log4j_filepath");

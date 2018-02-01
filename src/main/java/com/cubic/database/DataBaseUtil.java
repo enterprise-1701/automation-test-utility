@@ -131,7 +131,9 @@ public class DataBaseUtil {
                  else if(dbName.equalsIgnoreCase(GenericConstants.SQLSERVER)){
                      Class.forName(propTable.get("sqlserver_driverName"));
                  }
-                 
+                 else if(dbName.equalsIgnoreCase(GenericConstants.POSTGRESQL)){
+                	 Class.forName(propTable.get("postgre_driverName"));
+                 }
                  // Setup connection, but check for database Role (internal_logon) in case of ORACLE
                  LOG.info("DB URL = " + dbUrl);
                  if (dbName.equalsIgnoreCase(GenericConstants.ORACLE) && !(dbRole == null || dbRole.isEmpty())) {
@@ -199,6 +201,10 @@ public class DataBaseUtil {
 				Class.forName(propTable.get("sqlserver_driverName"));
 				connection=DriverManager.getConnection(propTable.get("sqlserver_dbURL"), propTable.get("sqlserver_username"), propTable.get("sqlserver_password"));
 			}
+			else if(dbName.equalsIgnoreCase(GenericConstants.POSTGRESQL)){
+				Class.forName(propTable.get("postgre_driverName"));
+				connection = DriverManager.getConnection(propTable.get("postgre_dbURL"), propTable.get("postgre_username"), propTable.get("postgre_password"));
+			}
 			LOG.info("+++++++++ DB Connection Established+++++++++++++++++");
 			statement = connection.createStatement();
 			LOG.info("+++++++++ Statement Established+++++++++++++++++");
@@ -214,13 +220,15 @@ public class DataBaseUtil {
      * 
      * @param query indicates select query Of Type String
      * @return ResultSet holds the table data
+     * @throws Exception 
      */
-	public ResultSet retrieveData(String query){
+	public ResultSet retrieveData(String query) throws Exception{
 		try{
 			LOG.info("Query: " + query);
 			resultSet = statement.executeQuery(query);
 	    }catch(Exception e){
 	    	LOG.error(Log4jUtil.getStackTrace(e));
+	    	throw e;
 		}
 		return resultSet;
 	}
@@ -231,8 +239,9 @@ public class DataBaseUtil {
      * @param colName
      * @param rowNum
      * @return
+	 * @throws Exception 
      */
-    public int getIntQuery(String dbQuery, String colName, int rowNum) {
+    public int getIntQuery(String dbQuery, String colName, int rowNum) throws Exception {
         // #### Send Query and Extract Value
         ResultSet rs = retrieveData(dbQuery);
         int retVal = 0;
@@ -254,6 +263,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
+            throw e;
         }
         
         return retVal;
@@ -265,8 +275,9 @@ public class DataBaseUtil {
      * @param colName
      * @param rowNum
      * @return
+     * @throws Exception 
      */
-    public long getLongQuery(String dbQuery, String colName, int rowNum) {
+    public long getLongQuery(String dbQuery, String colName, int rowNum) throws Exception {
         // #### Send Query and Extract Value
         ResultSet rs = retrieveData(dbQuery);
         long retVal = 0;
@@ -288,6 +299,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
+            throw e;
         }
         
         return retVal;
@@ -299,8 +311,9 @@ public class DataBaseUtil {
      * @param colName
      * @param rowNum
      * @return
+     * @throws Exception 
      */
-    public String getStringQuery(String dbQuery, String colName, int rowNum) {
+    public String getStringQuery(String dbQuery, String colName, int rowNum) throws Exception {
         // #### Send Query and Extract Value
         ResultSet rs = retrieveData(dbQuery);
         String retVal = "";
@@ -322,6 +335,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
+            throw e;
         }
         
         return retVal;
@@ -332,14 +346,16 @@ public class DataBaseUtil {
 	 * 
 	 * @param query DBQuery of type String (Only Create,Update and Delete)
 	 * @return int value states the success of operation
+	 * @throws Exception 
 	 */
-	public int selectQuery(String query){
+	public int selectQuery(String query) throws Exception {
 		int value=0;
 		try{
 			 LOG.info("Query: " + query);
 			 value = statement.executeUpdate(query);			
 		}catch(Exception e){
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
 		}
 		return value;
 	}
@@ -348,8 +364,9 @@ public class DataBaseUtil {
      * Checks if given result set is empty or not
      * @param rs - Result Set
      * @return
+     * @throws Exception 
      */
-    public boolean isEmptyResultSet(ResultSet rs) {
+    public boolean isEmptyResultSet(ResultSet rs) throws Exception {
         boolean retVal = true;
         
         try {
@@ -359,12 +376,13 @@ public class DataBaseUtil {
         catch (Exception e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();
+            throw e;
         }
         
         return retVal;
     }
     
-	public void closeConnection(){
+	public void closeConnection() throws Exception{
 		try{
 
 			if(statement!=null){
@@ -380,6 +398,7 @@ public class DataBaseUtil {
 			}
 		}catch(SQLException e){
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw e;
 		}
 	}
 }
