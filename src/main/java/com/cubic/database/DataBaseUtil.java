@@ -222,13 +222,13 @@ public class DataBaseUtil {
      * @return ResultSet holds the table data
      * @throws Exception 
      */
-	public ResultSet retrieveData(String query) throws Exception{
+	public ResultSet retrieveData(String query) {
 		try{
 			LOG.info("Query: " + query);
 			resultSet = statement.executeQuery(query);
 	    }catch(Exception e){
 	    	LOG.error(Log4jUtil.getStackTrace(e));
-	    	throw e;
+	    	throw new RuntimeException();
 		}
 		return resultSet;
 	}
@@ -241,7 +241,7 @@ public class DataBaseUtil {
      * @return
 	 * @throws Exception 
      */
-    public int getIntQuery(String dbQuery, String colName, int rowNum) throws Exception {
+    public int getIntQuery(String dbQuery, String colName, int rowNum) {
         // #### Send Query and Extract Value
         ResultSet rs = retrieveData(dbQuery);
         int retVal = 0;
@@ -263,7 +263,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
-            throw e;
+            throw new RuntimeException();
         }
         
         return retVal;
@@ -277,7 +277,7 @@ public class DataBaseUtil {
      * @return
      * @throws Exception 
      */
-    public long getLongQuery(String dbQuery, String colName, int rowNum) throws Exception {
+    public long getLongQuery(String dbQuery, String colName, int rowNum) {
         // #### Send Query and Extract Value
         ResultSet rs = retrieveData(dbQuery);
         long retVal = 0;
@@ -299,7 +299,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
-            throw e;
+            throw new RuntimeException();
         }
         
         return retVal;
@@ -313,7 +313,7 @@ public class DataBaseUtil {
      * @return
      * @throws Exception 
      */
-    public String getStringQuery(String dbQuery, String colName, int rowNum) throws Exception {
+    public String getStringQuery(String dbQuery, String colName, int rowNum) {
         // #### Send Query and Extract Value
         ResultSet rs = retrieveData(dbQuery);
         String retVal = "";
@@ -335,7 +335,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
-            throw e;
+            throw new RuntimeException();
         }
         
         return retVal;
@@ -348,14 +348,14 @@ public class DataBaseUtil {
 	 * @return int value states the success of operation
 	 * @throws Exception 
 	 */
-	public int selectQuery(String query) throws Exception {
+	public int selectQuery(String query) {
 		int value=0;
 		try{
 			 LOG.info("Query: " + query);
 			 value = statement.executeUpdate(query);			
 		}catch(Exception e){
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException();
 		}
 		return value;
 	}
@@ -366,7 +366,7 @@ public class DataBaseUtil {
      * @return
      * @throws Exception 
      */
-    public boolean isEmptyResultSet(ResultSet rs) throws Exception {
+    public boolean isEmptyResultSet(ResultSet rs) {
         boolean retVal = true;
         
         try {
@@ -376,13 +376,13 @@ public class DataBaseUtil {
         catch (Exception e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();
-            throw e;
+            throw new RuntimeException();
         }
         
         return retVal;
     }
     
-	public void closeConnection() throws Exception{
+	public void closeConnection() {
 		try{
 
 			if(statement!=null){
@@ -398,7 +398,7 @@ public class DataBaseUtil {
 			}
 		}catch(SQLException e){
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException();
 		}
 	}
 }
