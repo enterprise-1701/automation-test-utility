@@ -157,6 +157,7 @@ public class DataBaseUtil {
          }
          catch (Exception e) {
              LOG.error(Log4jUtil.getStackTrace(e));
+             throw new RuntimeException(e);
          }
          
          return connection;
@@ -228,7 +229,7 @@ public class DataBaseUtil {
 			resultSet = statement.executeQuery(query);
 	    }catch(Exception e){
 	    	LOG.error(Log4jUtil.getStackTrace(e));
-	    	throw new RuntimeException();
+	    	throw new RuntimeException(e);
 		}
 		return resultSet;
 	}
@@ -263,7 +264,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
         
         return retVal;
@@ -299,7 +300,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
         
         return retVal;
@@ -335,7 +336,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
         
         return retVal;
@@ -355,7 +356,7 @@ public class DataBaseUtil {
 			 value = statement.executeUpdate(query);			
 		}catch(Exception e){
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw new RuntimeException();
+			throw new RuntimeException(e);
 		}
 		return value;
 	}
@@ -376,7 +377,7 @@ public class DataBaseUtil {
         catch (Exception e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
         
         return retVal;
@@ -398,7 +399,7 @@ public class DataBaseUtil {
 			}
 		}catch(SQLException e){
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw new RuntimeException();
+			throw new RuntimeException(e);
 		}
 	}
 }
