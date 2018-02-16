@@ -52,7 +52,7 @@ public abstract class DateUtil {
 			year = cal.get(Calendar.YEAR) + number;
 		}catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		
 		return year;
@@ -118,7 +118,7 @@ public abstract class DateUtil {
 			afterDateFormat = dateFormat.format(date);
 		}catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		
 		return afterDateFormat;
@@ -142,7 +142,7 @@ public abstract class DateUtil {
 			afterDateFormat = sdf.format(tomorrow);
 		}catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		
 		return afterDateFormat;
@@ -356,8 +356,8 @@ public abstract class DateUtil {
                     // return the new date formatted as defined by your specified format
                     dateAfterFormat = sdf.format(pastFutureMonthDate); 
         	 	}catch (Exception e) {
-        			LOG.error(Log4jUtil.getStackTrace(e));
-        			throw e;
+    				LOG.error(Log4jUtil.getStackTrace(e));
+    				throw new RuntimeException(e);
         		}
                
                 return dateAfterFormat;
@@ -393,8 +393,8 @@ public abstract class DateUtil {
                     dateAfterFormat =sdf.format(pastFutureDayMonthDate);
                     
         	  	}catch (Exception e) {
-        			LOG.error(Log4jUtil.getStackTrace(e));
-        			throw e;
+    				LOG.error(Log4jUtil.getStackTrace(e));
+    				throw new RuntimeException(e);
         		}
         	  
                  return dateAfterFormat;

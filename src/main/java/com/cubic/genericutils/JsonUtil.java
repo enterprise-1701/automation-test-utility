@@ -43,11 +43,11 @@ public class JsonUtil {
 		} 
 		catch (NullPointerException e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		return actualVal;
 	}
@@ -64,11 +64,11 @@ public class JsonUtil {
 		} 
 		catch (NullPointerException e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		return object;
 	}
@@ -92,11 +92,11 @@ public class JsonUtil {
 		} 
 		catch (NullPointerException e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		return actualVal;
 	}
@@ -123,7 +123,7 @@ public class JsonUtil {
 
 		} catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		return jsonArray;
 	}	
@@ -175,7 +175,7 @@ public class JsonUtil {
 
 		} catch (Exception e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
-			throw e;
+			throw new RuntimeException(e);
 		}
 		return size;
 	}
@@ -213,7 +213,7 @@ public class JsonUtil {
 
         } catch (Exception e) {
             LOG.error(Log4jUtil.getStackTrace(e));
-            throw e;
+			throw new RuntimeException(e);
         }
 
         return results;
