@@ -1,9 +1,11 @@
 package com.cubic.genericutils;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +14,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
@@ -411,4 +414,36 @@ public abstract class FileUtil {
 				}
 				return randomNum;
 			}
+			
+			/**
+			 * This function is used to read the data from csv file and stores it into an Array List and returns the Array List
+			 * @param file
+			 * @return
+			 * @throws Throwable
+			 * @return returns list of array values of string data
+			 */
+			public static  ArrayList<String> readDataFromCSV(File file) throws Throwable {
+
+				String line = "";
+				String csvSplitBy = ",";
+
+				ArrayList<String> columnvalues = new ArrayList<String>();
+				try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+
+					while ((line = br.readLine()) != null) {
+
+						String[] data = line.split(csvSplitBy);
+						for (int i = 0; i < data.length; i++) {
+								columnvalues.add(data[i]);
+
+						}
+
+					}
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return columnvalues;
+
+			} 
 		}
