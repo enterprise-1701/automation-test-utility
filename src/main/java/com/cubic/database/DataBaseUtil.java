@@ -21,6 +21,8 @@ public class DataBaseUtil {
 	private Statement statement = null;
 	private ResultSet resultSet = null;
     private Hashtable<String , String> propTable = GenericConstants.GENERIC_FW_CONFIG_PROPERTIES;
+    private static int openConnectionCount = 0;
+    private static int totalConnections = 0;
     
    /** 
     *  Connects to the required database 
@@ -131,7 +133,9 @@ public class DataBaseUtil {
                  else if(dbName.equalsIgnoreCase(GenericConstants.SQLSERVER)){
                      Class.forName(propTable.get("sqlserver_driverName"));
                  }
-                 
+                 else if(dbName.equalsIgnoreCase(GenericConstants.POSTGRESQL)){
+                	 Class.forName(propTable.get("postgre_driverName"));
+                 }
                  // Setup connection, but check for database Role (internal_logon) in case of ORACLE
                  LOG.info("DB URL = " + dbUrl);
                  if (dbName.equalsIgnoreCase(GenericConstants.ORACLE) && !(dbRole == null || dbRole.isEmpty())) {
@@ -149,12 +153,16 @@ public class DataBaseUtil {
                  }
              }
                  
+             ++openConnectionCount;     // Keep track of currently open connections and total connections
+             ++totalConnections;
+             
              LOG.info("+++++++++ DB Connection Established+++++++++++++++++");
              statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
              LOG.info("+++++++++ Statement Established+++++++++++++++++");
          }
          catch (Exception e) {
              LOG.error(Log4jUtil.getStackTrace(e));
+             throw new RuntimeException(e);
          }
          
          return connection;
@@ -199,12 +207,21 @@ public class DataBaseUtil {
 				Class.forName(propTable.get("sqlserver_driverName"));
 				connection=DriverManager.getConnection(propTable.get("sqlserver_dbURL"), propTable.get("sqlserver_username"), propTable.get("sqlserver_password"));
 			}
+			else if(dbName.equalsIgnoreCase(GenericConstants.POSTGRESQL)){
+				Class.forName(propTable.get("postgre_driverName"));
+				connection = DriverManager.getConnection(propTable.get("postgre_dbURL"), propTable.get("postgre_username"), propTable.get("postgre_password"));
+			}
+			
+			++openConnectionCount;   // Keep track of currently open connections and total connections
+			++totalConnections;
+			
 			LOG.info("+++++++++ DB Connection Established+++++++++++++++++");
 			statement = connection.createStatement();
 			LOG.info("+++++++++ Statement Established+++++++++++++++++");
 		}catch(Exception e){
 			e.printStackTrace();
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw new RuntimeException(e);
 		}
 		return connection;
 	}
@@ -215,12 +232,13 @@ public class DataBaseUtil {
      * @param query indicates select query Of Type String
      * @return ResultSet holds the table data
      */
-	public ResultSet retrieveData(String query){
+	public ResultSet retrieveData(String query) {
 		try{
 			LOG.info("Query: " + query);
 			resultSet = statement.executeQuery(query);
 	    }catch(Exception e){
 	    	LOG.error(Log4jUtil.getStackTrace(e));
+	    	throw new RuntimeException(e);
 		}
 		return resultSet;
 	}
@@ -254,6 +272,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
+            throw new RuntimeException(e);
         }
         
         return retVal;
@@ -288,6 +307,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
+            throw new RuntimeException(e);
         }
         
         return retVal;
@@ -322,6 +342,7 @@ public class DataBaseUtil {
         catch (SQLException e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();      // Close only on exception
+            throw new RuntimeException(e);
         }
         
         return retVal;
@@ -333,13 +354,14 @@ public class DataBaseUtil {
 	 * @param query DBQuery of type String (Only Create,Update and Delete)
 	 * @return int value states the success of operation
 	 */
-	public int selectQuery(String query){
+	public int selectQuery(String query) {
 		int value=0;
 		try{
 			 LOG.info("Query: " + query);
 			 value = statement.executeUpdate(query);			
 		}catch(Exception e){
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw new RuntimeException(e);
 		}
 		return value;
 	}
@@ -359,27 +381,55 @@ public class DataBaseUtil {
         catch (Exception e) {
             LOG.error(Log4jUtil.getStackTrace(e));
             closeConnection();
+            throw new RuntimeException(e);
         }
         
         return retVal;
     }
     
+    /**
+     * Closes the Database Connection
+     */
 	public void closeConnection(){
 		try{
-
+		    LOG.info("++++++++ CLOSING DB Connection +++++++++++++++++");
+		    
 			if(statement!=null){
+			    LOG.info("++++++++ statement NOT NULL, CLOSING... +++++++++++++++++");
 				statement.close();
 				statement = null;
 			}
 			if(resultSet!=null){
+			    LOG.info("++++++++ resultSet NOT NULL, CLOSING... +++++++++++++++++");
 				resultSet.close();
 			}
 			if(connection!=null){
+			    LOG.info("++++++++ connection NOT NULL, CLOSING... +++++++++++++++++\n");
 				connection.close();
-				 connection = null;
+				connection = null;
+				--openConnectionCount;      // Decrement every time we close the DB connection
 			}
 		}catch(SQLException e){
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw new RuntimeException(e);
 		}
 	}
+	
+	/**
+	 * Utility to return the currently open connection count
+	 * @return
+	 */
+	public int getOpenConnectionCount() {
+	    LOG.info("++++++++ CURRENT Open Connection Count: " + openConnectionCount + " -- Total DB Connections: " + totalConnections);
+	    return openConnectionCount;
+	}
+	
+	/**
+     * Utility to return the total connections opened so far
+     * @return
+     */
+    public int getTotalConnectionCount() {
+        LOG.info("++++++++ TOTAL DB Connections: " + totalConnections + " -- Current Connection Count: " + openConnectionCount);
+        return totalConnections;
+    }
 }
