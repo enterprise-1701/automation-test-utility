@@ -416,16 +416,17 @@ public abstract class FileUtil {
 			}
 			
 			/**
-			 * This function is used to read the data from csv file and stores it into an Array List and returns the Array List
+			 * This function is used to read the data from csv file with a comma separated and stores them into an array list
 			 * @param file
 			 * @return
 			 * @throws Throwable
 			 * @return returns list of array values of string data
 			 */
-			public static  ArrayList<String> readDataFromCSV(File file) throws Throwable {
+			public static  ArrayList<String> readDataFromCSV(String filePath) throws Throwable {
 
 				String line = "";
 				String csvSplitBy = ",";
+				File file = new File(filePath);
 
 				ArrayList<String> columnvalues = new ArrayList<String>();
 				try (BufferedReader br = new BufferedReader(new FileReader(file))) {
