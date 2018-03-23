@@ -21,6 +21,8 @@ public class DataBaseUtil {
 	private Statement statement = null;
 	private ResultSet resultSet = null;
     private Hashtable<String , String> propTable = GenericConstants.GENERIC_FW_CONFIG_PROPERTIES;
+    private static int openConnectionCount = 0;
+    private static int totalConnections = 0;
     
    /** 
     *  Connects to the required database 
@@ -151,6 +153,9 @@ public class DataBaseUtil {
                  }
              }
                  
+             ++openConnectionCount;     // Keep track of currently open connections and total connections
+             ++totalConnections;
+             
              LOG.info("+++++++++ DB Connection Established+++++++++++++++++");
              statement = connection.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY);
              LOG.info("+++++++++ Statement Established+++++++++++++++++");
@@ -206,12 +211,17 @@ public class DataBaseUtil {
 				Class.forName(propTable.get("postgre_driverName"));
 				connection = DriverManager.getConnection(propTable.get("postgre_dbURL"), propTable.get("postgre_username"), propTable.get("postgre_password"));
 			}
+			
+			++openConnectionCount;   // Keep track of currently open connections and total connections
+			++totalConnections;
+			
 			LOG.info("+++++++++ DB Connection Established+++++++++++++++++");
 			statement = connection.createStatement();
 			LOG.info("+++++++++ Statement Established+++++++++++++++++");
 		}catch(Exception e){
 			e.printStackTrace();
 			LOG.error(Log4jUtil.getStackTrace(e));
+			throw new RuntimeException(e);
 		}
 		return connection;
 	}
@@ -221,7 +231,6 @@ public class DataBaseUtil {
      * 
      * @param query indicates select query Of Type String
      * @return ResultSet holds the table data
-     * @throws Exception 
      */
 	public ResultSet retrieveData(String query) {
 		try{
@@ -240,7 +249,6 @@ public class DataBaseUtil {
      * @param colName
      * @param rowNum
      * @return
-	 * @throws Exception 
      */
     public int getIntQuery(String dbQuery, String colName, int rowNum) {
         // #### Send Query and Extract Value
@@ -276,7 +284,6 @@ public class DataBaseUtil {
      * @param colName
      * @param rowNum
      * @return
-     * @throws Exception 
      */
     public long getLongQuery(String dbQuery, String colName, int rowNum) {
         // #### Send Query and Extract Value
@@ -312,7 +319,6 @@ public class DataBaseUtil {
      * @param colName
      * @param rowNum
      * @return
-     * @throws Exception 
      */
     public String getStringQuery(String dbQuery, String colName, int rowNum) {
         // #### Send Query and Extract Value
@@ -347,7 +353,6 @@ public class DataBaseUtil {
 	 * 
 	 * @param query DBQuery of type String (Only Create,Update and Delete)
 	 * @return int value states the success of operation
-	 * @throws Exception 
 	 */
 	public int selectQuery(String query) {
 		int value=0;
@@ -365,7 +370,6 @@ public class DataBaseUtil {
      * Checks if given result set is empty or not
      * @param rs - Result Set
      * @return
-     * @throws Exception 
      */
     public boolean isEmptyResultSet(ResultSet rs) {
         boolean retVal = true;
@@ -383,23 +387,49 @@ public class DataBaseUtil {
         return retVal;
     }
     
-	public void closeConnection() {
+    /**
+     * Closes the Database Connection
+     */
+	public void closeConnection(){
 		try{
-
+		    LOG.info("++++++++ CLOSING DB Connection +++++++++++++++++");
+		    
 			if(statement!=null){
+			    LOG.info("++++++++ statement NOT NULL, CLOSING... +++++++++++++++++");
 				statement.close();
 				statement = null;
 			}
 			if(resultSet!=null){
+			    LOG.info("++++++++ resultSet NOT NULL, CLOSING... +++++++++++++++++");
 				resultSet.close();
 			}
 			if(connection!=null){
+			    LOG.info("++++++++ connection NOT NULL, CLOSING... +++++++++++++++++\n");
 				connection.close();
-				 connection = null;
+				connection = null;
+				--openConnectionCount;      // Decrement every time we close the DB connection
 			}
 		}catch(SQLException e){
 			LOG.error(Log4jUtil.getStackTrace(e));
 			throw new RuntimeException(e);
 		}
 	}
+	
+	/**
+	 * Utility to return the currently open connection count
+	 * @return
+	 */
+	public int getOpenConnectionCount() {
+	    LOG.info("++++++++ CURRENT Open Connection Count: " + openConnectionCount + " -- Total DB Connections: " + totalConnections);
+	    return openConnectionCount;
+	}
+	
+	/**
+     * Utility to return the total connections opened so far
+     * @return
+     */
+    public int getTotalConnectionCount() {
+        LOG.info("++++++++ TOTAL DB Connections: " + totalConnections + " -- Current Connection Count: " + openConnectionCount);
+        return totalConnections;
+    }
 }
