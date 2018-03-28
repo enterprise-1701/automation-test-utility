@@ -490,6 +490,7 @@ public class TestRailUtil {
 	 * @return
 	 * @author romeroo
 	 */
+	@SuppressWarnings("unchecked")
 	public static JSONObject createTestClassListFromTestSet(HashSet<String> testClassSet, String projectID, String suiteID){
         JSONArray testRailAutomationRefNames = new JSONArray();
         JSONArray testRailTestIDs = new JSONArray();
