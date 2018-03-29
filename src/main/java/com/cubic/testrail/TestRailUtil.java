@@ -5,8 +5,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Hashtable;
 
+import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -14,9 +16,13 @@ import org.json.simple.parser.ParseException;
 
 import com.cubic.genericutils.FileUtil;
 import com.cubic.genericutils.GenericConstants;
+import com.cubic.logutils.Log4jUtil;
 
 public class TestRailUtil {
 
+    public static final String CLASS_NAME = "TestScript_Driver";
+    private static final Logger LOG = Logger.getLogger(CLASS_NAME);
+    
 	public APIClient trclient=null;
 	private static Hashtable<String , String> propTable = GenericConstants.GENERIC_FW_CONFIG_PROPERTIES;
 
@@ -472,4 +478,82 @@ public class TestRailUtil {
 
 	}
 
+	/**
+	 * Method to create a "reduced" JSONObject with test cases that are present in the given testClassSet HashSet, by
+	 * matching the returned Automation References (i.e. Class names) from TestRail with that is in HashSet.  This is useful
+	 * when running smaller TestNG suites.  Without this method and calling updateTestClassList() instead, ALL of the test 
+	 * cases from TestRail that have an "Automation Reference" field populated will get run regardless of what is in the TestNG.xml
+	 * suite.  The caller of this method is responsible for building/creating the testClassSet, which by definition has UNIQUE entries.
+	 * @param testClassSet
+	 * @param projectID
+	 * @param suiteID
+	 * @return
+	 * @author romeroo
+	 */
+	@SuppressWarnings("unchecked")
+	public static JSONObject createTestClassListFromTestSet(HashSet<String> testClassSet, String projectID, String suiteID){
+        JSONArray testRailAutomationRefNames = new JSONArray();
+        JSONArray testRailTestIDs = new JSONArray();
+        JSONObject tempTCID=new JSONObject();
+        JSONObject tcIDList=new JSONObject();
+        String tCAutomationRef=null;
+        String tCTestRailRef=null;
+        LOG.info("INSIDE updateTestClassList");
+        
+        // Get TestRail Credentials
+        TestRailUtil tr = new TestRailUtil(propTable.get("Test_Rail_Base_Url"), propTable.get("Test_Rail_UserName"), propTable.get("Test_Rail_Password"));
+        
+        try {
+            if (projectID == null || suiteID == null || projectID == "${ProjectID}" || suiteID == "${SuiteID}" || suiteID == "${SuitID}") {
+                throw new Exception("Project ID or Suite ID values are not provided"); 
+            }
+            
+            // Get all Test Cases in the TestRail Test Suite, then build JSONObject by matching with what is in testClassSet HashSet
+            JSONArray testCases = tr.getAllTestCasesOfSuite(projectID, suiteID);
+            
+            // Cycle through each Test Case "object" in the Test Suite returned by TestRail
+            for(int i = 0; i < testCases.size(); i++) {
+
+                tempTCID = (JSONObject)testCases.get(i);
+                
+                // Check if Test Case in TestRail has the "Automation Reference" field populated
+                if(tempTCID.get("custom_automation_reference") != null) {  
+                    tCAutomationRef = tempTCID.get("custom_automation_reference").toString();
+                    tCTestRailRef = tempTCID.get("id").toString();
+
+                    // Check if Test Class (i.e. "Automation Reference") is contained in the provided HashSet
+                    if (testClassSet.contains(tCAutomationRef)) {
+                        testRailTestIDs.add(tCTestRailRef);
+                        
+                        // Check if Test Class (i.e. "Automation Reference") has already been added (shouldn't have to)
+                        if(!testRailAutomationRefNames.toString().contains(tCAutomationRef))
+                        {                   
+                            testRailAutomationRefNames.add(tCAutomationRef);                 
+                        }
+                        else {
+                            LOG.error("DUPLICATE Automation Reference: " + tCAutomationRef + ", with TestRail ID: " + tCTestRailRef + ". Please check TestRail");
+                        }
+                    }
+                }
+            }
+            
+            tcIDList.put("TestClasses", testRailAutomationRefNames);
+            tcIDList.put("TestRailCaseIDs", testRailTestIDs);
+            
+            try (FileWriter file = new FileWriter(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH+GenericConstants.TEST_CLASSES_TO_BE_EXECUTED_JSON)) {
+                file.write(tcIDList.toJSONString());
+                file.flush();
+            } 
+            catch (IOException e) {
+                LOG.error(Log4jUtil.getStackTrace(e));
+                throw new RuntimeException(e);
+            }
+
+        } catch (Exception e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
+        }
+        
+        return tcIDList;
+    }
 }
