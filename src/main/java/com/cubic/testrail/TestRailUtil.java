@@ -155,7 +155,8 @@ public class TestRailUtil {
 			file.flush();
 
 		} catch (IOException e) {
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		testRuns= (JSONObject) trclient.sendPost("add_run/"+projectID, jsonObject);
 
@@ -256,12 +257,13 @@ public class TestRailUtil {
 				file.flush();
 
 			} catch (IOException e) {
-				e.printStackTrace();
+			    LOG.error(Log4jUtil.getStackTrace(e));
+	            throw new RuntimeException(e);
 			}
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 
 	}
@@ -309,12 +311,13 @@ public class TestRailUtil {
 				file.flush();
 
 			} catch (IOException e) {
-				e.printStackTrace();
+			    LOG.error(Log4jUtil.getStackTrace(e));
+	            throw new RuntimeException(e);
 			}
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return tcIDList;
 	}
@@ -327,7 +330,7 @@ public class TestRailUtil {
 	 */
 	//TODO TestRail Integration Code
 	public static void generateTestRunsForTestCases(String ProjectID,String SuiteID,Date currentTimeStamp) {
-		// TODO Auto-generated method stub
+
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{		
 			if(ProjectID==null || SuiteID==null){
@@ -335,22 +338,24 @@ public class TestRailUtil {
 			}
 			tr.updateTestCaseList(ProjectID,SuiteID);
 		}catch (Exception e) {
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		JSONObject testRailObj = new JSONObject();
 		JSONObject testRunBlock=new JSONObject();
 		try {
 			testRunBlock = tr.addTestRun(ProjectID, SuiteID,currentTimeStamp);
 		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		testRailObj.put("TestRunID", testRunBlock.get("id"));
 		try (FileWriter file = new FileWriter(GenericConstants.CUSTOM_REPORTS_RESULTS+"/"+GenericConstants.TEST_RAIL_SUITE_RESULTS_JSON)) {
 			file.write(testRailObj.toJSONString());
 			file.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 	}
 
@@ -358,7 +363,6 @@ public class TestRailUtil {
 	 * Updates results in Test Run based on the Automation Test Execution results
 	 */
 	public static void updateTestResultsinTestRail() {
-		// TODO Auto-generated method stub
 
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{
@@ -369,7 +373,8 @@ public class TestRailUtil {
 			tr.updateResultsOfTestRun(testRun.get("TestRunID").toString());
 
 		}catch(Exception e){
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 	}
 
@@ -379,7 +384,6 @@ public class TestRailUtil {
 	 * @param Status
 	 */
 	public static void updateTestResultinTestRail(String testID,String Status) {
-		// TODO Auto-generated method stub
 
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{
@@ -390,7 +394,8 @@ public class TestRailUtil {
 			tr.updateResultOfTestRun(testRun.get("TestRunID").toString(),testID,Status);
 
 		}catch(Exception e){
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 	}
 
@@ -405,8 +410,8 @@ public class TestRailUtil {
 		try {
 			testCases = (JSONArray)trclient.sendGet("get_cases/"+projectID+"&suite_id="+suiteID);
 		} catch (IOException | APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return testCases;
 	}
@@ -420,8 +425,8 @@ public class TestRailUtil {
 		try {
 			projectObjects = (JSONArray)trclient.sendGet("get_projects");
 		} catch (IOException | APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return projectObjects;
 	}
@@ -436,8 +441,8 @@ public class TestRailUtil {
 		try {
 			suiteObjects = (JSONArray)trclient.sendGet("get_suites/"+projectID);
 		} catch (IOException | APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return suiteObjects;
 	}
@@ -452,8 +457,8 @@ public class TestRailUtil {
 		try {
 			tests = (JSONArray)trclient.sendGet("get_tests/"+runID);
 		} catch (IOException | APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return tests;
 	}
@@ -473,8 +478,8 @@ public class TestRailUtil {
 			//trclient.sendPost("add_result/"+testID, testResult);
 			trclient.sendPost("add_result_for_case/"+runId+"/"+caseID, testResult);
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 
 	}
