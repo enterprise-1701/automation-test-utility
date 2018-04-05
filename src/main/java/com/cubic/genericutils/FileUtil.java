@@ -53,7 +53,8 @@ public abstract class FileUtil {
 			byte[] encoded = Files.readAllBytes(Paths.get(path));
 			fileContent = new String(encoded, Charset.defaultCharset());
 		}catch (Exception e) {
-			LOG.error(e);
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		
 		return fileContent;
@@ -73,7 +74,8 @@ public abstract class FileUtil {
 		try{
 			flag = new File(path).exists() ? true : false;
 		}catch (Exception e) {
-			LOG.error(Log4jUtil.getStackTrace(e));
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return flag;
 	}
@@ -199,8 +201,8 @@ public abstract class FileUtil {
 			bufferWriter = new BufferedWriter(fileWriter);
 			bufferWriter.write(contentToAppend);
 		} catch (IOException e) {
-			e.printStackTrace();
-			LOG.error(e);
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		} finally {
 			try {
 				if (bufferWriter != null)
@@ -208,8 +210,8 @@ public abstract class FileUtil {
 				if (fileWriter != null)
 					fileWriter.close();
 			} catch (IOException ex) {
-				ex.printStackTrace();
-				LOG.error(ex);
+			    LOG.error(Log4jUtil.getStackTrace(ex));
+	            throw new RuntimeException(ex);
 			}
 		}
 
@@ -263,7 +265,8 @@ public abstract class FileUtil {
 			try {
 				delete(directory);
 				} catch (IOException e) {
-					LOG.error(Log4jUtil.getStackTrace(e));
+				    LOG.error(Log4jUtil.getStackTrace(e));
+		            throw new RuntimeException(e);
 				}
 			}
 		}
@@ -364,7 +367,8 @@ public abstract class FileUtil {
 				System.out.println("Delete operation is failed.");
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 	}
 		
@@ -406,7 +410,8 @@ public abstract class FileUtil {
 					parsedText = pdfStripper.getText(pdDoc);
 					parser.getPDDocument().close();
 				}catch(Exception e){
-					LOG.error(Log4jUtil.getStackTrace(e));
+				    LOG.error(Log4jUtil.getStackTrace(e));
+		            throw new RuntimeException(e);
 				}
 			return parsedText;
 			}
@@ -459,7 +464,8 @@ public abstract class FileUtil {
 					}
 
 				} catch (IOException e) {
-					e.printStackTrace();
+				    LOG.error(Log4jUtil.getStackTrace(e));
+		            throw new RuntimeException(e);
 				}
 				return columnvalues;
 
