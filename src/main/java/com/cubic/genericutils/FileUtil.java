@@ -233,13 +233,13 @@ public abstract class FileUtil {
 		    
 		    // Check Directory first, if non-existent, create it
 		    if (!fileToCreate.getParentFile().exists()) {
-		        System.out.println("FALSE fileToCreate.getParentFile().exists()");
+		        LOG.info("Directory DOES NOT exist, CREATING...");
 		        fileToCreate.getParentFile().mkdirs();
 		    }
 		        
 		    // Check file
             if (!fileToCreate.exists()) {
-                System.out.println("FALSE fileToCreate.createNewFile()");
+                LOG.info("File DOES NOT exist, CREATING...");
                 fileToCreate.createNewFile();
             }
 
@@ -364,9 +364,9 @@ public abstract class FileUtil {
 		try {
 			File file = new File(fileName);
 			if (file.delete()) {
-				System.out.println(file.getName() + " is deleted!");
+				LOG.info(file.getName() + " is deleted!");
 			} else {
-				System.out.println("Delete operation is failed.");
+				LOG.info("Delete operation is failed.");
 			}
 		} catch (Exception e) {
 		    LOG.error(Log4jUtil.getStackTrace(e));
