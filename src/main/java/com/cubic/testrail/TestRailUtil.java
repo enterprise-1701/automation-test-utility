@@ -89,6 +89,7 @@ public class TestRailUtil {
 	 * @throws Throwable
 	 * @author Cigniti
 	 */
+	@SuppressWarnings("unchecked")
 	private JSONArray getTestCaseIDs(String projectID,String suiteID) throws Throwable{
 		JSONArray jsonArr= getAllTestCasesOfSuite(projectID, suiteID);
 		JSONArray testcaseIDs = new JSONArray();
@@ -110,6 +111,7 @@ public class TestRailUtil {
 	 * @throws Throwable
 	 * @author Cigniti
 	 */
+	@SuppressWarnings("unchecked")
 	private JSONObject addTestRun(String projectID,String suiteID,Date currentTimeStamp) throws Throwable{
 		JSONParser parser = new JSONParser();
 		JSONArray testCases= getAllTestCasesOfSuite(projectID, suiteID);
@@ -155,7 +157,8 @@ public class TestRailUtil {
 			file.flush();
 
 		} catch (IOException e) {
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		testRuns= (JSONObject) trclient.sendPost("add_run/"+projectID, jsonObject);
 
@@ -189,8 +192,9 @@ public class TestRailUtil {
 				test=(JSONObject)tests.get(i);
 				String testTitle=(String)test.get("title");
 				String test_Rail_Test_Case_ID =  String.valueOf(test.get("case_id"));
-				if(testTitle.contains(tcID) || test_Rail_Test_Case_ID.equals(tcID)){
+				if (test_Rail_Test_Case_ID.equals(tcID) || testTitle.contains(tcID)) {
 					updateResultOfTestID(test.get("id").toString(), tcStatus);
+					break;     // No need to continue loop if test found
 				}
 			}
 		}
@@ -200,7 +204,6 @@ public class TestRailUtil {
 
 	private void updateResultOfTestRun(String runID,String testID,String status) throws MalformedURLException, IOException, APIException, ParseException{
 
-		JSONParser parser = new JSONParser();
 		JSONArray tests= getAllTestsUnderTestRun(runID);
 		JSONObject test = null; 
 		for(int i=0;i<tests.size();i++){
@@ -220,6 +223,7 @@ public class TestRailUtil {
 	 * @throws IOException
 	 * @throws APIException
 	 */
+	@SuppressWarnings("unchecked")
 	private void updateResultOfTestID(String testID,String status) throws MalformedURLException, IOException, APIException{
 		JSONObject testResult= new JSONObject();
 		if(status.equalsIgnoreCase("pass")){
@@ -236,6 +240,7 @@ public class TestRailUtil {
 	 * @param projectID
 	 * @param suiteID
 	 */
+	@SuppressWarnings("unchecked")
 	private void updateTestCaseList(String projectID,String suiteID){
 		JSONArray tcIDs = new JSONArray();
 		JSONObject tempTCID=new JSONObject();
@@ -255,12 +260,13 @@ public class TestRailUtil {
 				file.flush();
 
 			} catch (IOException e) {
-				e.printStackTrace();
+			    LOG.error(Log4jUtil.getStackTrace(e));
+	            throw new RuntimeException(e);
 			}
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 
 	}
@@ -272,6 +278,7 @@ public class TestRailUtil {
 	 * @param projectID
 	 * @param suiteID
 	 */
+	@SuppressWarnings("unchecked")
 	public static JSONObject updateTestClassList(String projectID,String suiteID){
 		JSONArray tcIDs = new JSONArray();
 		JSONArray testRailTestIDs = new JSONArray();
@@ -308,12 +315,13 @@ public class TestRailUtil {
 				file.flush();
 
 			} catch (IOException e) {
-				e.printStackTrace();
+			    LOG.error(Log4jUtil.getStackTrace(e));
+	            throw new RuntimeException(e);
 			}
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return tcIDList;
 	}
@@ -325,8 +333,9 @@ public class TestRailUtil {
 	 * @param currentTimeStamp
 	 */
 	//TODO TestRail Integration Code
+	@SuppressWarnings("unchecked")
 	public static void generateTestRunsForTestCases(String ProjectID,String SuiteID,Date currentTimeStamp) {
-		// TODO Auto-generated method stub
+
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{		
 			if(ProjectID==null || SuiteID==null){
@@ -334,22 +343,24 @@ public class TestRailUtil {
 			}
 			tr.updateTestCaseList(ProjectID,SuiteID);
 		}catch (Exception e) {
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		JSONObject testRailObj = new JSONObject();
 		JSONObject testRunBlock=new JSONObject();
 		try {
 			testRunBlock = tr.addTestRun(ProjectID, SuiteID,currentTimeStamp);
 		} catch (Throwable e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		testRailObj.put("TestRunID", testRunBlock.get("id"));
 		try (FileWriter file = new FileWriter(GenericConstants.CUSTOM_REPORTS_RESULTS+"/"+GenericConstants.TEST_RAIL_SUITE_RESULTS_JSON)) {
 			file.write(testRailObj.toJSONString());
 			file.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 	}
 
@@ -357,7 +368,6 @@ public class TestRailUtil {
 	 * Updates results in Test Run based on the Automation Test Execution results
 	 */
 	public static void updateTestResultsinTestRail() {
-		// TODO Auto-generated method stub
 
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{
@@ -368,7 +378,8 @@ public class TestRailUtil {
 			tr.updateResultsOfTestRun(testRun.get("TestRunID").toString());
 
 		}catch(Exception e){
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 	}
 
@@ -378,7 +389,6 @@ public class TestRailUtil {
 	 * @param Status
 	 */
 	public static void updateTestResultinTestRail(String testID,String Status) {
-		// TODO Auto-generated method stub
 
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{
@@ -389,7 +399,8 @@ public class TestRailUtil {
 			tr.updateResultOfTestRun(testRun.get("TestRunID").toString(),testID,Status);
 
 		}catch(Exception e){
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 	}
 
@@ -404,8 +415,8 @@ public class TestRailUtil {
 		try {
 			testCases = (JSONArray)trclient.sendGet("get_cases/"+projectID+"&suite_id="+suiteID);
 		} catch (IOException | APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return testCases;
 	}
@@ -419,8 +430,8 @@ public class TestRailUtil {
 		try {
 			projectObjects = (JSONArray)trclient.sendGet("get_projects");
 		} catch (IOException | APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return projectObjects;
 	}
@@ -435,8 +446,8 @@ public class TestRailUtil {
 		try {
 			suiteObjects = (JSONArray)trclient.sendGet("get_suites/"+projectID);
 		} catch (IOException | APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return suiteObjects;
 	}
@@ -451,14 +462,16 @@ public class TestRailUtil {
 		try {
 			tests = (JSONArray)trclient.sendGet("get_tests/"+runID);
 		} catch (IOException | APIException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 		return tests;
 	}
+	
+	@SuppressWarnings("unchecked")
 	public void updateResultsOfCase(String runId, String caseID,String resultStatus, String comment){
 		try {
-			TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
+
 			JSONObject testResult= new JSONObject();
 
 			if(resultStatus.equalsIgnoreCase("pass")){
@@ -472,8 +485,8 @@ public class TestRailUtil {
 			//trclient.sendPost("add_result/"+testID, testResult);
 			trclient.sendPost("add_result_for_case/"+runId+"/"+caseID, testResult);
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
+		    LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
 		}
 
 	}
@@ -498,7 +511,7 @@ public class TestRailUtil {
         JSONObject tcIDList=new JSONObject();
         String tCAutomationRef=null;
         String tCTestRailRef=null;
-        LOG.info("INSIDE updateTestClassList");
+        LOG.info("INSIDE createTestClassListFromTestSet");
         
         // Get TestRail Credentials
         TestRailUtil tr = new TestRailUtil(propTable.get("Test_Rail_Base_Url"), propTable.get("Test_Rail_UserName"), propTable.get("Test_Rail_Password"));
@@ -524,15 +537,7 @@ public class TestRailUtil {
                     // Check if Test Class (i.e. "Automation Reference") is contained in the provided HashSet
                     if (testClassSet.contains(tCAutomationRef)) {
                         testRailTestIDs.add(tCTestRailRef);
-                        
-                        // Check if Test Class (i.e. "Automation Reference") has already been added (shouldn't have to)
-                        if(!testRailAutomationRefNames.toString().contains(tCAutomationRef))
-                        {                   
-                            testRailAutomationRefNames.add(tCAutomationRef);                 
-                        }
-                        else {
-                            LOG.error("DUPLICATE Automation Reference: " + tCAutomationRef + ", with TestRail ID: " + tCTestRailRef + ". Please check TestRail");
-                        }
+						testRailAutomationRefNames.add(tCAutomationRef);                 
                     }
                 }
             }
