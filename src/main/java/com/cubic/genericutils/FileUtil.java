@@ -225,20 +225,16 @@ public abstract class FileUtil {
 	 * @throws IOException Should be handled IOException
 	 */
 	public synchronized static void createFileWithContent(String filePath, String data) throws IOException {
-		System.out.println("Class name : " + getCallerClassName() + "Method name : " + getCallerMethodName());
-		System.out.println("FILEPATH: " + filePath);
+		LOG.info("createFileWithContent -- Caller Class name : " + getCallerClassName() + "Method name : " + getCallerMethodName());
+		
 		try {
-		    
-		    boolean fileExists = false;
+		    LOG.info("FILEPATH: " + filePath);
 		    File fileToCreate = new File(filePath);
 		    
-		    // Check Directory
+		    // Check Directory first, if non-existent, create it
 		    if (!fileToCreate.getParentFile().exists()) {
 		        System.out.println("FALSE fileToCreate.getParentFile().exists()");
 		        fileToCreate.getParentFile().mkdirs();
-		    }
-		    else {
-		        System.out.println("TRUE fileToCreate.getParentFile().exists()");
 		    }
 		        
 		    // Check file
@@ -246,21 +242,7 @@ public abstract class FileUtil {
                 System.out.println("FALSE fileToCreate.createNewFile()");
                 fileToCreate.createNewFile();
             }
-            else {
-                System.out.println("TRUE fileToCreate.createNewFile()");
-            }
-                
-            /**
-		    // The method createNewFile() will do NOTHING if file already exists -- This guarantees the File exists after the call
-		    //fileExists = fileToCreate.createNewFile();
-		    
-		    if (fileExists) {
-		        LOG.info("File at path: " + filePath + " already EXISTS");
-		    }
-		    else {
-		        LOG.info("File at path: " + filePath + " did NOT EXIST, it was created");
-		    }
-**/
+
 			FileOutputStream out = new FileOutputStream(fileToCreate, false);
 			out.write(data.getBytes());
 			out.close();
@@ -269,7 +251,6 @@ public abstract class FileUtil {
 			throw new RuntimeException(e);
  		}
 	}
-	
 	
 	/**
 	 * Deletes the File or Folder from respective path 
