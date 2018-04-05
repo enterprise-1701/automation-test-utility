@@ -4,7 +4,7 @@
 
   <groupId>com.cubic.testutil</groupId>
   <artifactId>testutil</artifactId>
-  <version>1.5_oscar</version>
+  <version>1.5</version>
   <packaging>jar</packaging>
 
   <name>testutil</name>
