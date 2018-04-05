@@ -89,6 +89,7 @@ public class TestRailUtil {
 	 * @throws Throwable
 	 * @author Cigniti
 	 */
+	@SuppressWarnings("unchecked")
 	private JSONArray getTestCaseIDs(String projectID,String suiteID) throws Throwable{
 		JSONArray jsonArr= getAllTestCasesOfSuite(projectID, suiteID);
 		JSONArray testcaseIDs = new JSONArray();
@@ -110,6 +111,7 @@ public class TestRailUtil {
 	 * @throws Throwable
 	 * @author Cigniti
 	 */
+	@SuppressWarnings("unchecked")
 	private JSONObject addTestRun(String projectID,String suiteID,Date currentTimeStamp) throws Throwable{
 		JSONParser parser = new JSONParser();
 		JSONArray testCases= getAllTestCasesOfSuite(projectID, suiteID);
@@ -202,7 +204,6 @@ public class TestRailUtil {
 
 	private void updateResultOfTestRun(String runID,String testID,String status) throws MalformedURLException, IOException, APIException, ParseException{
 
-		JSONParser parser = new JSONParser();
 		JSONArray tests= getAllTestsUnderTestRun(runID);
 		JSONObject test = null; 
 		for(int i=0;i<tests.size();i++){
@@ -222,6 +223,7 @@ public class TestRailUtil {
 	 * @throws IOException
 	 * @throws APIException
 	 */
+	@SuppressWarnings("unchecked")
 	private void updateResultOfTestID(String testID,String status) throws MalformedURLException, IOException, APIException{
 		JSONObject testResult= new JSONObject();
 		if(status.equalsIgnoreCase("pass")){
@@ -238,6 +240,7 @@ public class TestRailUtil {
 	 * @param projectID
 	 * @param suiteID
 	 */
+	@SuppressWarnings("unchecked")
 	private void updateTestCaseList(String projectID,String suiteID){
 		JSONArray tcIDs = new JSONArray();
 		JSONObject tempTCID=new JSONObject();
@@ -275,6 +278,7 @@ public class TestRailUtil {
 	 * @param projectID
 	 * @param suiteID
 	 */
+	@SuppressWarnings("unchecked")
 	public static JSONObject updateTestClassList(String projectID,String suiteID){
 		JSONArray tcIDs = new JSONArray();
 		JSONArray testRailTestIDs = new JSONArray();
@@ -329,6 +333,7 @@ public class TestRailUtil {
 	 * @param currentTimeStamp
 	 */
 	//TODO TestRail Integration Code
+	@SuppressWarnings("unchecked")
 	public static void generateTestRunsForTestCases(String ProjectID,String SuiteID,Date currentTimeStamp) {
 
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
@@ -462,9 +467,11 @@ public class TestRailUtil {
 		}
 		return tests;
 	}
+	
+	@SuppressWarnings("unchecked")
 	public void updateResultsOfCase(String runId, String caseID,String resultStatus, String comment){
 		try {
-			TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
+
 			JSONObject testResult= new JSONObject();
 
 			if(resultStatus.equalsIgnoreCase("pass")){
