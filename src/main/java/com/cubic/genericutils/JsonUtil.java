@@ -180,11 +180,11 @@ public class JsonUtil {
 		return size;
 	}
 
-    public synchronized static List<HashMap> getJsonArrayToHashMap(String jsonData, String jsonPathExpression) throws Throwable {
+    public synchronized static List<HashMap<String, String>> getJsonArrayToHashMap(String jsonData, String jsonPathExpression) throws Throwable {
         LOG.info("Class name : " + getCallerClassName() + "Method name : " + getCallerMethodName());
 
         JSONArray jsonArray = null;
-        List<HashMap> results = new ArrayList<>();
+        List<HashMap<String, String>> results = new ArrayList<>();
 
         try {
             Object document = Configuration.defaultConfiguration().jsonProvider().parse(jsonData);
@@ -202,7 +202,7 @@ public class JsonUtil {
                 for (int i = 0; i < jsonResults.length(); i++) {
                     org.json.JSONObject childJsonArray = jsonResults.getJSONObject(i);
                     Iterator<?> keys = childJsonArray.keys();
-                    HashMap<String, String> row = new HashMap<>();
+                    HashMap<String, String> row = new HashMap<String, String>();
                     while (keys.hasNext()) {
                         String key = (String) keys.next();
                         row.put(key, childJsonArray.get(key).toString());
