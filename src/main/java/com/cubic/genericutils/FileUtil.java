@@ -9,12 +9,15 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
@@ -221,12 +224,26 @@ public abstract class FileUtil {
 	 */
 	public synchronized static void createFileWithContent(String filePath, String data) throws IOException {
 		LOG.info("Class name : " + getCallerClassName() + "Method name : " + getCallerMethodName());
-		try{
-			FileOutputStream out = new FileOutputStream(filePath);
+		try {
+		    boolean fileExists = false;
+		    File fileToCreate = new File(filePath);
+		    
+		    // The method createNewFile() will do NOTHING if file already exists -- This guarantees the File exists after the call
+		    fileExists = fileToCreate.createNewFile();
+		    
+		    if (fileExists) {
+		        LOG.info("File at path: " + filePath + " already EXISTS");
+		    }
+		    else {
+		        LOG.info("File at path: " + filePath + " did NOT EXIST, it was created");
+		    }
+
+			FileOutputStream out = new FileOutputStream(fileToCreate, false);
 			out.write(data.getBytes());
 			out.close();
 		}catch (Exception e) {
-			LOG.error(e);
+		    LOG.error(Log4jUtil.getStackTrace(e));
+			throw new RuntimeException(e);
  		}
 	}
 	
@@ -407,10 +424,10 @@ public abstract class FileUtil {
 				Random rn = new Random();
 				int j = rn.nextInt((Max - Min) + 1);
 				randomNum =  Min + j;
-				//System.out.println("random number is ****"+randomNum);
+
 				} catch (Exception e) {
-				// TODO: handle exception
-				e.printStackTrace();
+				    LOG.error(Log4jUtil.getStackTrace(e));
+				    throw new RuntimeException(e);
 				}
 				return randomNum;
 			}
@@ -446,5 +463,71 @@ public abstract class FileUtil {
 				}
 				return columnvalues;
 
-			} 
-		}
+	} 
+	
+	/**
+     * Processes a CSV file (not necessarily separated by commas) into an ArrayList of Hashtables
+     * @param filepath
+     * @return
+     */
+    public static ArrayList<Hashtable<String, String>> processCSV(String filepath, String csvSeparator) {
+        BufferedReader br = null;
+        String line = "";
+        String[] colNames = null;
+        ArrayList<String> colNameList = null;
+        ArrayList<String> runValuesList = null;
+        Hashtable<String, String> runValues = null;
+        ArrayList<Hashtable<String, String>> testData = null;
+        String colName = "";
+        String value = "";
+        int runCount = 0;
+
+        try {
+            LOG.info("##### OPEN INPUT FILE FOR READING: " + filepath + "\n");
+            br = new BufferedReader(new InputStreamReader(FileUtil.class.getClass().getResourceAsStream(filepath)));
+            
+            LOG.info("##### READ FIRST LINE CONTAINING COLUMN NAMES\n");
+            line = br.readLine();
+            if (line != null) {
+                colNames = line.split(csvSeparator, -1);
+                colNameList = new ArrayList<String>(Arrays.asList(line.split(csvSeparator, -1)));
+                LOG.info("colNames length: " + colNames.length);
+                LOG.info("colNameList size: " + colNameList.size());
+                LOG.info("Line found: " + line);
+            }
+            
+            LOG.info("##### CREATE HASHTABLE\n");
+            testData = new ArrayList<Hashtable<String, String>>();
+            
+            while ((line = br.readLine()) != null) {
+                LOG.info("##### LINE #" + ++runCount + " FOUND: " + line + "\n");
+                
+                LOG.info("##### SPLIT VALUES");
+                runValuesList = new ArrayList<String>(Arrays.asList(line.split(csvSeparator, -1)));
+                runValues = new Hashtable<String, String>();
+                
+                LOG.info("##### LOOP THROUGH EACH COLUMN NAME TO BUILD HASHTABLE FOR ROW");
+                for (int i = 0; i < colNameList.size(); ++i) {
+                    colName = colNameList.get(i);
+                    value = runValuesList.get(i);
+                    
+                    LOG.info("##### COLUMN NUMBER: " + (i + 1) + ", COLUMN NAME: " + colName + ", VALUE: " + value);
+                    runValues.put(colName, value);
+                }
+                
+                LOG.info("##### runValues Hashtable size: " + runValues.size() + "\n");
+                testData.add(runValues);
+            }
+            
+            if (br != null) {
+                br.close();     // Clean-up
+            }
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        
+        return testData;
+    }
+}
