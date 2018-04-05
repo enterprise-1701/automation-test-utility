@@ -225,13 +225,34 @@ public abstract class FileUtil {
 	 * @throws IOException Should be handled IOException
 	 */
 	public synchronized static void createFileWithContent(String filePath, String data) throws IOException {
-		LOG.info("Class name : " + getCallerClassName() + "Method name : " + getCallerMethodName());
+		System.out.println("Class name : " + getCallerClassName() + "Method name : " + getCallerMethodName());
+		System.out.println("FILEPATH: " + filePath);
 		try {
+		    
 		    boolean fileExists = false;
 		    File fileToCreate = new File(filePath);
 		    
+		    // Check Directory
+		    if (!fileToCreate.getParentFile().exists()) {
+		        System.out.println("FALSE fileToCreate.getParentFile().exists()");
+		        fileToCreate.getParentFile().mkdirs();
+		    }
+		    else {
+		        System.out.println("TRUE fileToCreate.getParentFile().exists()");
+		    }
+		        
+		    // Check file
+            if (!fileToCreate.exists()) {
+                System.out.println("FALSE fileToCreate.createNewFile()");
+                fileToCreate.createNewFile();
+            }
+            else {
+                System.out.println("TRUE fileToCreate.createNewFile()");
+            }
+                
+            /**
 		    // The method createNewFile() will do NOTHING if file already exists -- This guarantees the File exists after the call
-		    fileExists = fileToCreate.createNewFile();
+		    //fileExists = fileToCreate.createNewFile();
 		    
 		    if (fileExists) {
 		        LOG.info("File at path: " + filePath + " already EXISTS");
@@ -239,7 +260,7 @@ public abstract class FileUtil {
 		    else {
 		        LOG.info("File at path: " + filePath + " did NOT EXIST, it was created");
 		    }
-
+**/
 			FileOutputStream out = new FileOutputStream(fileToCreate, false);
 			out.write(data.getBytes());
 			out.close();
