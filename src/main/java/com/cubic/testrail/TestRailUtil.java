@@ -189,8 +189,9 @@ public class TestRailUtil {
 				test=(JSONObject)tests.get(i);
 				String testTitle=(String)test.get("title");
 				String test_Rail_Test_Case_ID =  String.valueOf(test.get("case_id"));
-				if(testTitle.contains(tcID) || test_Rail_Test_Case_ID.equals(tcID)){
+				if (test_Rail_Test_Case_ID.equals(tcID) || testTitle.contains(tcID)) {
 					updateResultOfTestID(test.get("id").toString(), tcStatus);
+					break;     // No need to continue loop if test found
 				}
 			}
 		}
@@ -498,7 +499,7 @@ public class TestRailUtil {
         JSONObject tcIDList=new JSONObject();
         String tCAutomationRef=null;
         String tCTestRailRef=null;
-        LOG.info("INSIDE updateTestClassList");
+        LOG.info("INSIDE createTestClassListFromTestSet");
         
         // Get TestRail Credentials
         TestRailUtil tr = new TestRailUtil(propTable.get("Test_Rail_Base_Url"), propTable.get("Test_Rail_UserName"), propTable.get("Test_Rail_Password"));
@@ -524,15 +525,7 @@ public class TestRailUtil {
                     // Check if Test Class (i.e. "Automation Reference") is contained in the provided HashSet
                     if (testClassSet.contains(tCAutomationRef)) {
                         testRailTestIDs.add(tCTestRailRef);
-                        
-                        // Check if Test Class (i.e. "Automation Reference") has already been added (shouldn't have to)
-                        if(!testRailAutomationRefNames.toString().contains(tCAutomationRef))
-                        {                   
-                            testRailAutomationRefNames.add(tCAutomationRef);                 
-                        }
-                        else {
-                            LOG.error("DUPLICATE Automation Reference: " + tCAutomationRef + ", with TestRail ID: " + tCTestRailRef + ". Please check TestRail");
-                        }
+						testRailAutomationRefNames.add(tCAutomationRef);                 
                     }
                 }
             }
