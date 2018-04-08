@@ -47,7 +47,7 @@ public class CustomReports {
 	 * 
 	 * @throws Exception
 	 */
-	public void createFolderStructureForCustomReport() throws Exception {
+	public void createFolderStructureForCustomReport(boolean testRailFlag) throws Exception {
 		try {
 			executionStartTime = TimeUtil.getCurrentInstant();
 			
@@ -68,12 +68,6 @@ public class CustomReports {
 			String summaryReportFilePath = dynamicResultsFolderPath + "/" + GenericConstants.CUSTOM_SUMMARY_REPORT_NAME;
 			
 			//Test Rail integration code
-			boolean testRailFlag=false;
-			if(propTable.get("Test_Rail_Integration_Enable_Flag")==null){
-				testRailFlag=false;
-			}else if(propTable.get("Test_Rail_Integration_Enable_Flag").equalsIgnoreCase("true")){
-				testRailFlag=true;
-			}
 			if(testRailFlag){				
 				JSONObject tr=new JSONObject();
 				JSONArray tresults = new JSONArray();
@@ -129,14 +123,14 @@ public class CustomReports {
 	 * 
 	 * @throws Exception
 	 */
-	public void generateSummaryReport() throws Exception {
+	public void generateSummaryReport(boolean testRailFlag) throws Exception {
 		try {
 			executionEndTime = TimeUtil.getCurrentInstant();
 			
 			//Stores the suite execution time for summary report
 			customReportBean.setSuiteExecutionTime(TimeUtil.getTimeDifference(executionStartTime, executionEndTime));
 			
-			summaryReport.generateSummaryReport(customReportBean);
+			summaryReport.generateSummaryReport(customReportBean,testRailFlag);
 			
 			//Places the results in latest results folder.
 			FileUtil.copyAllFilesInDirectory(new File(customReportBean.getResultsFolderBasePath()),
@@ -238,6 +232,7 @@ public class CustomReports {
 			detailedReport.updateDetailedReport(detailedReportFilePath, GenericConstants.TEST_CASE_FAIL, stepName,
 					description, stepNumber, null);
 			detailedReportBean.setCurrentStepNumber(stepNumber);
+			detailedReportBean.setFailStepDescription(description);
 		} catch (IOException e) {
 			LOG.error(Log4jUtil.getStackTrace(e));
 		}
@@ -380,6 +375,7 @@ public class CustomReports {
 			detailedReport.updateDetailedReport(detailedReportFilePath, GenericConstants.TEST_CASE_FAIL, stepName,
 					description, stepNumber, screenshotFileName);
 			detailedReportBean.setCurrentStepNumber(stepNumber);
+			detailedReportBean.setFailStepDescription(description);
 		} catch (IOException e) {
 			e.printStackTrace();
 			LOG.error(e);
