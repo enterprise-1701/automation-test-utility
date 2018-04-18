@@ -25,7 +25,7 @@ public class TestRailUtil {
     
 	public APIClient trclient=null;
 	private static Hashtable<String , String> propTable = GenericConstants.GENERIC_FW_CONFIG_PROPERTIES;
-
+	public static boolean testRailFlag;
 	public TestRailUtil(String base_url,String userName, String password){		
 		trclient=new APIClient(base_url);
 		trclient.setUser(userName);
@@ -188,12 +188,13 @@ public class TestRailUtil {
 			testResult=(JSONObject)testResults.get(j);
 			String tcID=(String) testResult.get("TestCaseID");
 			String tcStatus= (String) testResult.get("TestStatus");
+			String comment= (String) testResult.get("TestComment");
 			for(int i=0;i<tests.size();i++){
 				test=(JSONObject)tests.get(i);
 				String testTitle=(String)test.get("title");
 				String test_Rail_Test_Case_ID =  String.valueOf(test.get("case_id"));
 				if (test_Rail_Test_Case_ID.equals(tcID) || testTitle.contains(tcID)) {
-					updateResultOfTestID(test.get("id").toString(), tcStatus);
+					updateResultOfTestID(test.get("id").toString(), tcStatus,comment);
 					break;     // No need to continue loop if test found
 				}
 			}
@@ -202,7 +203,7 @@ public class TestRailUtil {
 	}
 
 
-	private void updateResultOfTestRun(String runID,String testID,String status) throws MalformedURLException, IOException, APIException, ParseException{
+	private void updateResultOfTestRun(String runID,String testID,String status,String comment) throws MalformedURLException, IOException, APIException, ParseException{
 
 		JSONArray tests= getAllTestsUnderTestRun(runID);
 		JSONObject test = null; 
@@ -210,7 +211,7 @@ public class TestRailUtil {
 			test=(JSONObject)tests.get(i);
 			String testTitle=(String)test.get("title");
 			if(testTitle.contains(testID)){
-				updateResultOfTestID(test.get("id").toString(), status);
+				updateResultOfTestID(test.get("id").toString(), status,comment);
 			}
 		}	
 	}
@@ -224,12 +225,15 @@ public class TestRailUtil {
 	 * @throws APIException
 	 */
 	@SuppressWarnings("unchecked")
-	private void updateResultOfTestID(String testID,String status) throws MalformedURLException, IOException, APIException{
+	private void updateResultOfTestID(String testID,String status,String comment) throws MalformedURLException, IOException, APIException{
 		JSONObject testResult= new JSONObject();
-		if(status.equalsIgnoreCase("pass")){
+		if(status==null){
+			testResult.put("status_id", TestStatus.UNTESTED.getCode().toString());
+		}else if(status.equalsIgnoreCase("pass")){
 			testResult.put("status_id", TestStatus.PASS.getCode().toString());
 		}else if(status.equalsIgnoreCase("fail")){
 			testResult.put("status_id", TestStatus.FAIL.getCode().toString());
+			testResult.put("comment", comment);
 		}
 		trclient.sendPost("add_result/"+testID, testResult);
 	}
@@ -332,7 +336,6 @@ public class TestRailUtil {
 	 * @param SuiteID
 	 * @param currentTimeStamp
 	 */
-	//TODO TestRail Integration Code
 	@SuppressWarnings("unchecked")
 	public static void generateTestRunsForTestCases(String ProjectID,String SuiteID,Date currentTimeStamp) {
 
@@ -359,8 +362,26 @@ public class TestRailUtil {
 			file.write(testRailObj.toJSONString());
 			file.flush();
 		} catch (IOException e) {
-		    LOG.error(Log4jUtil.getStackTrace(e));
+		  LOG.error(Log4jUtil.getStackTrace(e));
             throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Update Test run ID with existing TestRun as provided
+	 * @param runID
+	 */
+	@SuppressWarnings("unchecked")
+	public static void setExistingTestRunID(String runID) {
+		JSONObject testRailObj = new JSONObject();
+		
+		testRailObj.put("TestRunID", runID);
+		try (FileWriter file = new FileWriter(GenericConstants.CUSTOM_REPORTS_RESULTS+"/"+GenericConstants.TEST_RAIL_SUITE_RESULTS_JSON)) {
+			file.write(testRailObj.toJSONString());
+			file.flush();
+		} catch (IOException e) {
+			 LOG.error(Log4jUtil.getStackTrace(e));
+	            throw new RuntimeException(e);
 		}
 	}
 
@@ -388,7 +409,8 @@ public class TestRailUtil {
 	 * @param testID
 	 * @param Status
 	 */
-	public static void updateTestResultinTestRail(String testID,String Status) {
+	public static void updateTestResultinTestRail(String testID,String Status,String Comment) {
+		
 
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{
@@ -396,7 +418,7 @@ public class TestRailUtil {
 			JSONParser parser = new JSONParser();
 			Object obj = parser.parse(new FileReader(GenericConstants.CUSTOM_REPORTS_RESULTS+"/"+GenericConstants.TEST_RAIL_SUITE_RESULTS_JSON));
 			JSONObject testRun = (JSONObject) obj;
-			tr.updateResultOfTestRun(testRun.get("TestRunID").toString(),testID,Status);
+			tr.updateResultOfTestRun(testRun.get("TestRunID").toString(),testID,Status,Comment);
 
 		}catch(Exception e){
 		    LOG.error(Log4jUtil.getStackTrace(e));
@@ -468,13 +490,24 @@ public class TestRailUtil {
 		return tests;
 	}
 	
+	
+	/**
+	 * @author 203099
+	 * Method to update test result of particular case under provided test run along with provided comment
+	 * @param runId
+	 * @param caseID
+	 * @param resultStatus
+	 * @param comment
+	 */
 	@SuppressWarnings("unchecked")
 	public void updateResultsOfCase(String runId, String caseID,String resultStatus, String comment){
 		try {
 
 			JSONObject testResult= new JSONObject();
-
-			if(resultStatus.equalsIgnoreCase("pass")){
+			if(resultStatus==null){
+				testResult.put("status_id", TestStatus.UNTESTED.getCode().toString());
+				testResult.put("comment", comment);
+			}else if(resultStatus.equalsIgnoreCase("pass")){
 				testResult.put("status_id", TestStatus.PASS.getCode().toString());
 				testResult.put("comment", comment);
 
@@ -561,4 +594,83 @@ public class TestRailUtil {
         
         return tcIDList;
     }
+	
+	/**
+	 * @author 203099
+	 * To set TestRail Integration flag to true or false based on external values.
+	 * @param test_Rail_Integration_Enable_Flag
+	 * @return
+	 */
+	public static boolean getTestRailEnableFlag(String test_Rail_Integration_Enable_Flag,String projectID, String suiteID){
+		
+		System.out.println("test_Rail_Integration_Enable_Flag::::: "+test_Rail_Integration_Enable_Flag);
+		System.out.println("projectID::::: "+projectID);
+		System.out.println("suiteID::::: "+suiteID);
+		if((propTable.get("Test_Rail_Integration_Enable_Flag")==null || propTable.get("Test_Rail_Integration_Enable_Flag").equalsIgnoreCase("false"))
+				&& (test_Rail_Integration_Enable_Flag == null 
+						|| test_Rail_Integration_Enable_Flag.equals("%test_Rail_Integration_Enable_Flag%") 
+						|| test_Rail_Integration_Enable_Flag.equals("${test_Rail_Integration_Enable_Flag}")
+						|| test_Rail_Integration_Enable_Flag.equals("false"))){
+			testRailFlag=false;
+		}else if(test_Rail_Integration_Enable_Flag!=null && test_Rail_Integration_Enable_Flag.equals("true")){
+			testRailFlag=true;
+			}else if(propTable.get("Test_Rail_Integration_Enable_Flag").equalsIgnoreCase("true")){
+				testRailFlag=true;
+			}
+		if(testRailFlag){
+			try{
+				System.out.println(":::Project ID:::::"+projectID);
+				System.out.println(":::Suite ID:::::"+suiteID);
+				if((projectID==null || suiteID==null)){
+					testRailFlag=false;
+					throw new Exception("Project ID or Suite ID values are not provided");
+				}
+				if(projectID.equalsIgnoreCase("") || suiteID.equalsIgnoreCase("")){
+					testRailFlag=false;
+					throw new Exception("Project ID or Suite ID values should not be blank");
+				}
+			}catch (Exception e) {
+		        LOG.error(Log4jUtil.getStackTrace(e));
+                throw new RuntimeException(e);
+		    }
+		}
+		
+		return testRailFlag;
+	}
+	
+	/**
+	 * @author 203099
+	 * To derive project ID from TestNG XML or Generic Framework Properties
+	 * @param projectID
+	 * @return
+	 */
+	public static String getTestRailProjectID(String projectID){
+		String projID=null;
+		if((projectID!=null)  
+				&& (!projectID.equals("%projectID%")) 
+				&& (!projectID.equals("${ProjectID}"))){
+			projID= projectID;
+		}else if(propTable.get("Test_Rail_Project_ID")!=null){
+			projID= propTable.get("Test_Rail_Project_ID");
+		}
+		return projID;
+	}
+	
+	/**
+	 * @author 203099
+	 * To derive suite ID from TestNG XML or Generic Framework Properties
+	 * @param suiteID
+	 * @return
+	 */
+	public static String getTestRailSuiteID(String suiteID){
+		String suitID=null;
+		if((suiteID!=null) 
+				&& (!suiteID.equals("%suiteID%")) 
+				&& (!suiteID.equals("${SuiteID}"))){
+			suitID=suiteID;
+		}else if(propTable.get("Test_Rail_Suite_ID")!=null){
+			suitID=propTable.get("Test_Rail_Suite_ID");
+		}
+		return suitID;
+	}
 }

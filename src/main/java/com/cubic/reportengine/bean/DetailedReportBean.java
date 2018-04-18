@@ -14,6 +14,7 @@ public class DetailedReportBean {
 	private String detailedReportRelativeFilePath;
 	private String testCaseID;
 	private String testCaseDescriptionForSummaryReport;
+	private String failStepDescription;
 	
 	public int getCurrentStepNumber() {
 		return currentStepNumber;
@@ -94,4 +95,13 @@ public class DetailedReportBean {
 	public void setTestCaseDescriptionForSummaryReport(String testCaseDescriptionForSummaryReport) {
 		this.testCaseDescriptionForSummaryReport = testCaseDescriptionForSummaryReport;
 	}
+
+	public String getFailStepDescription() {
+		return failStepDescription;
+	}
+
+	public void setFailStepDescription(String failStepDescription) {
+		this.failStepDescription = failStepDescription;
+	}
+
 }
