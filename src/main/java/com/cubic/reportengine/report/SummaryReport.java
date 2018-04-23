@@ -24,7 +24,7 @@ public class SummaryReport {
 	 * @param customReportBean
 	 * @throws Exception
 	 */
-	void generateSummaryReport(CustomReportBean customReportBean) throws Exception {
+	void generateSummaryReport(CustomReportBean customReportBean,boolean testRailFlag) throws Exception {
 		try {
 			String summaryReportTemplate = ReportTemplates.SUMMARY_REPORT;
 
@@ -55,13 +55,6 @@ public class SummaryReport {
 
 			LinkedHashMap<String, DetailedReportBean> detailedReportMap = customReportBean.getDetailedReportMap();
 			int sNo = 1;
-			
-			boolean testRailFlag=false;
-			if(propTable.get("Test_Rail_Integration_Enable_Flag")==null){
-				testRailFlag=false;
-			}else if(propTable.get("Test_Rail_Integration_Enable_Flag").equalsIgnoreCase("true")){
-				testRailFlag=true;
-			}
 			JSONObject testRailObj = new JSONObject();
 			JSONArray testRailResultArray = new JSONArray();
 			for (String testCaseName : detailedReportMap.keySet()) { 
@@ -69,6 +62,7 @@ public class SummaryReport {
 				JSONObject testResultObj = new JSONObject();
 				testResultObj.put("TestStatus", returnTestCaseStatus(testCaseName, detailedReportMap));
 				testResultObj.put("TestCaseID", returnTestCaseID(testCaseName, detailedReportMap));
+				testResultObj.put("TestComment", returnTestCaseComment(testCaseName, detailedReportMap));
 				testRailResultArray.add(testResultObj);
 				sNo = sNo + 1;
 			}
@@ -139,6 +133,15 @@ public class SummaryReport {
 			LinkedHashMap<String, DetailedReportBean> detailedReportMap) {
 		DetailedReportBean detailedReportBean = detailedReportMap.get(testCaseName);
 		return detailedReportBean.getOverallStatus();
+	}
+	
+	private String returnTestCaseComment(String testCaseName,
+			LinkedHashMap<String, DetailedReportBean> detailedReportMap) {
+		DetailedReportBean detailedReportBean = detailedReportMap.get(testCaseName);
+		if(detailedReportBean.getFailStepDescription()==null)
+			return "";
+		else
+			return detailedReportBean.getFailStepDescription();
 	}
 
 	
