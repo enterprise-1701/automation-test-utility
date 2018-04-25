@@ -80,7 +80,13 @@ public class TestDataUtil {
 	public static Object[][] getTestDataFromJson(String testDatafilePath, String parentElement) throws Throwable {
 
 		return getTestDataFromJson(FileUtil.readFile(testDatafilePath),  "$."+parentElement, true);
+		
 	}	
+	public static Object[][] getTestDataFromJsonFile(String testDatafilePath, String parentElement, boolean returnJsonArrayWithinJsonData, boolean trimInputData) throws Throwable {
+
+		return getTestDataFromJsonString(FileUtil.readFile(testDatafilePath),  "$."+parentElement, returnJsonArrayWithinJsonData, trimInputData);
+		
+	}
 	
 	/**
 	 * Fetches the test data from the JSON file based on the JsonPathExpression
@@ -95,47 +101,80 @@ public class TestDataUtil {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public synchronized static Object[][] getTestDataFromJson(String testDatafilePath, String jsonPathExpression,
 			boolean trimTestData) throws Throwable {
+		return getTestDataFromJsonString(testDatafilePath, jsonPathExpression, false, trimTestData);
+	}
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public synchronized static Object[][] getTestDataFromJsonString(String testDataFileContents, String jsonPathExpression, 
+			boolean returnJsonArrayWithinJsonData, boolean trimTestData) {
 		LOG.info("Class name : " + getCallerClassName() + "Method name : " + getCallerMethodName());
-
+		
 		Object[][] object = null;
+		ArrayList<Hashtable<String, String>> dataListStr = null;
+		ArrayList<Hashtable<String, Object>> dataListObj = null;
 		try {
-			ArrayList<Hashtable<String, String>> dataList = null;
-
-			JSONArray jsonArray = JsonUtil.getJsonArray(testDatafilePath, jsonPathExpression);
+			JSONArray jsonArray = JsonUtil.getJsonArray(testDataFileContents, jsonPathExpression);
 			if (jsonArray.size() > 0) {
-				dataList = new ArrayList<Hashtable<String, String>>();
+				dataListObj = new ArrayList<Hashtable<String, Object>>();
 			} else {
 				LOG.error("test data is not in proper format OR no test data to parse");
 				throw new Exception("test data is not in proper format OR no test data to parse");
 			}
 
 			for (Object jsonObject : jsonArray) {
-				HashMap<String, String> hm = ((HashMap) jsonObject);
+				//HashMap<String, String> hm = ((HashMap) jsonObject);
+				HashMap<String, Object> hm = ((HashMap) jsonObject);
+				HashMap<String, String> hmStr;
 
-				String runMode = hm.get(GenericConstants.RUN_MODE);
+				String runMode = (String) hm.get(GenericConstants.RUN_MODE);
 				runMode = runMode != null ? runMode.trim() : runMode;
 
 				if (GenericConstants.RUN_MODE_YES.equalsIgnoreCase(runMode)) {
-					if (trimTestData) {
-						for (String key : hm.keySet()) {
-							if (hm.get(key) != null) {
-								hm.put(key, hm.get(key).trim());
+					//if (trimTestData) {
+					for (String key : hm.keySet()) {
+						if (hm.get(key) != null) {
+							if ( (!returnJsonArrayWithinJsonData) && (trimTestData) ) {
+								hm.put(key, ((String) hm.get(key)).trim());
+							} else if ( (!returnJsonArrayWithinJsonData) && (!trimTestData) ) {
+								hm.put(key, hm.get(key));
+							} else {
+								hm.put(key, hm.get(key));
 							}
 						}
 					}
-					dataList.add((new Hashtable<String, String>(hm)));
+					
+					if (!returnJsonArrayWithinJsonData) {
+						for (String key : hm.keySet()) {
+							hmStr.put(key, (String) hm.get(key));
+						}
+						dataListStr.add((new Hashtable<String, String>(hmStr)));
+					} else {
+						dataListObj.add((new Hashtable<String, Object>(hm)));
+					}
+
 				}
 			}
 
 			int index = 0;
-			object = new Object[dataList.size()][1];
-			for (Hashtable<String, String> ht : dataList) {
-				object[index][0] = ht;
-				index++;
+			if (!returnJsonArrayWithinJsonData) {
+				object = new Object[dataListStr.size()][1];
+				for (Hashtable<String, String> ht : dataListStr) {
+					object[index][0] = ht;
+					index++;
+				}
+			} else {
+				object = new Object[dataListObj.size()][1];
+				for (Hashtable<String, Object> ht : dataListObj) {
+					object[index][0] = ht;
+					index++;
+				}
 			}
+
 		} catch (Exception e) {
-			LOG.error(e);
+			LOG.error("ERROR:  " + "Class generating error -- " + e.getClass().toString());
+			LOG.error("ERROR:  " + "Message -- " + e.getMessage());
 			e.printStackTrace();
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
 
 		return object;
