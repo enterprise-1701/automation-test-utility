@@ -7,12 +7,18 @@ import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.testng.ISuite;
+import org.testng.ITestContext;
+import org.testng.xml.XmlClass;
+import org.testng.xml.XmlSuite;
+import org.testng.xml.XmlTest;
 
 import com.cubic.genericutils.FileUtil;
 import com.cubic.genericutils.GenericConstants;
@@ -673,4 +679,41 @@ public class TestRailUtil {
 		}
 		return suitID;
 	}
+	
+	/**
+     * Utility to create a HashSet of all the Test Classes that exist in the currently running
+     * TestNG.xml file (Assumes: NO duplicate classes) by extracting them from the ITestContext
+     * object
+     * @param context
+     * @return
+     */
+    public static HashSet<String> getTestClassListFromTestNG(ITestContext context) {
+        HashSet<String> testClassSet = null;
+        ISuite testSuite = context.getSuite();
+        XmlSuite xmlSuite = testSuite.getXmlSuite();
+        List<XmlTest> tests = xmlSuite.getTests();
+        
+        LOG.info("##### BUILDING HashSet of Test Classes from TestNG.xml");
+        testClassSet = new HashSet<String>();
+        
+        // Cycle through each "Test" TAG within TestNG.xml, that contains the actual Test <class> tags
+        for (int t = 0; t < tests.size(); t++) 
+        {
+            XmlTest test = tests.get(t);
+            List<XmlClass> classes = test.getClasses();                 // Extract list of actual Test Classes (each <class> entry in the file)
+            
+            LOG.info("Number of Test Classes in TestNG.xml File: " + classes.size());
+            // Cycle through each Test Class and get its "simple" name (not the full package name)
+            for (int c = 0; c < classes.size(); c++) {
+                XmlClass testClass = classes.get(c);
+                String className = testClass.getName();                                             // Full package name
+                String simpleClassName = className.substring(className.lastIndexOf(".") + 1);       // Extract just the Class name
+                
+                LOG.info("INDEX c: " + c + ", simpleClassName: " + simpleClassName);
+                testClassSet.add(simpleClassName);                                                  // Add to "list"
+            }  
+        }  
+        
+        return testClassSet;
+    }
 }
