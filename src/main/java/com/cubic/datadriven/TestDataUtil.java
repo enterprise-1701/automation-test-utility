@@ -78,7 +78,6 @@ public class TestDataUtil {
 	 * @throws Throwable Handle Exception
 	 */
 	public static Object[][] getTestDataFromJson(String testDatafilePath, String parentElement) throws Throwable {
-		System.out.println("********** INSIDE getTestDataFromJson -- FIRST METHOD");
 		return getTestDataFromJson(FileUtil.readFile(testDatafilePath),  "$."+parentElement, true);
 	}	
 	public static Object[][] getTestDataFromJsonFile(String testDatafilePath, String parentElement, boolean returnJsonArrayWithinJsonData, boolean trimInputData) throws Throwable {
