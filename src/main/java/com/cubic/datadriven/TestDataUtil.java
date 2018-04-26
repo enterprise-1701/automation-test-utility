@@ -78,9 +78,8 @@ public class TestDataUtil {
 	 * @throws Throwable Handle Exception
 	 */
 	public static Object[][] getTestDataFromJson(String testDatafilePath, String parentElement) throws Throwable {
-
+		System.out.println("********** INSIDE getTestDataFromJson -- FIRST METHOD");
 		return getTestDataFromJson(FileUtil.readFile(testDatafilePath),  "$."+parentElement, true);
-		
 	}	
 	public static Object[][] getTestDataFromJsonFile(String testDatafilePath, String parentElement, boolean returnJsonArrayWithinJsonData, boolean trimInputData) throws Throwable {
 
@@ -143,6 +142,8 @@ public class TestDataUtil {
 					}
 					
 					if (!returnJsonArrayWithinJsonData) {
+						dataListStr = new ArrayList<Hashtable<String, String>>();
+						hmStr = ((HashMap) jsonObject);
 						for (String key : hm.keySet()) {
 							hmStr.put(key, (String) hm.get(key));
 						}
