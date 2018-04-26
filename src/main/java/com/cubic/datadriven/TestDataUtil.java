@@ -119,7 +119,6 @@ public class TestDataUtil {
 			}
 
 			for (Object jsonObject : jsonArray) {
-				//
 				HashMap<String, Object> hm = ((HashMap) jsonObject);
 				HashMap<String, String> hmStr;
 
