@@ -119,7 +119,6 @@ public class TestDataUtil {
 			}
 
 			for (Object jsonObject : jsonArray) {
-				//HashMap<String, String> hm = ((HashMap) jsonObject);
 				HashMap<String, Object> hm = ((HashMap) jsonObject);
 				HashMap<String, String> hmStr;
 
@@ -127,7 +126,6 @@ public class TestDataUtil {
 				runMode = runMode != null ? runMode.trim() : runMode;
 
 				if (GenericConstants.RUN_MODE_YES.equalsIgnoreCase(runMode)) {
-					//if (trimTestData) {
 					for (String key : hm.keySet()) {
 						if (hm.get(key) != null) {
 							if ( (!returnJsonArrayWithinJsonData) && (trimTestData) ) {
