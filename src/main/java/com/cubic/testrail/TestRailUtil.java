@@ -113,20 +113,29 @@ public class TestRailUtil {
 	 * POST method to add test runs for test cases available under specified Suite in specified Project 
 	 * @param projectID
 	 * @param suiteID
+	 * @param currentTimeStamp
+	 * @param runName
 	 * @return
 	 * @throws Throwable
 	 * @author Cigniti
 	 */
 	@SuppressWarnings("unchecked")
-	private JSONObject addTestRun(String projectID,String suiteID,Date currentTimeStamp) throws Throwable{
+	private JSONObject addTestRun(String projectID, String suiteID, Date currentTimeStamp, String runName) throws Throwable{
 		JSONParser parser = new JSONParser();
 		JSONArray testCases= getAllTestCasesOfSuite(projectID, suiteID);
 		String testRunPostRequestJSON = FileUtil.readFile(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH+GenericConstants.TEST_RAIL_TEST_RUN_TEMPLATE_JSON);
 		String testRunPostRequestResetJSON = testRunPostRequestJSON;
 		String testCaseListJSON = FileUtil.readFile(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH+GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON);
 		testRunPostRequestJSON=testRunPostRequestJSON.replaceAll("<suite_id>", suiteID);
-		testRunPostRequestJSON=testRunPostRequestJSON.replaceAll("<rand>", ""+currentTimeStamp.toString().replaceAll(":", "_"));
-
+		
+		// Differentiate with "Run Name" if running multiple XML TestNG suites out of the same TestNG.xml file (if applicable)
+		if (runName != null && !runName.isEmpty()) {
+		    testRunPostRequestJSON=testRunPostRequestJSON.replaceAll("<rand>", runName + " " + currentTimeStamp.toString().replaceAll(":", "_"));
+		}
+		else {
+		    testRunPostRequestJSON=testRunPostRequestJSON.replaceAll("<rand>", "" + currentTimeStamp.toString().replaceAll(":", "_"));
+		}
+		
 		JSONObject testRuns = null;
 		Object obj = parser.parse(testRunPostRequestJSON);
 		Object testCaseObj = parser.parse(testCaseListJSON);
@@ -341,9 +350,10 @@ public class TestRailUtil {
 	 * @param ProjectID
 	 * @param SuiteID
 	 * @param currentTimeStamp
+	 * @param runName
 	 */
 	@SuppressWarnings("unchecked")
-	public static void generateTestRunsForTestCases(String ProjectID,String SuiteID,Date currentTimeStamp) {
+	public static void generateTestRunsForTestCases(String ProjectID, String SuiteID, Date currentTimeStamp, String runName) {
 
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{		
@@ -358,7 +368,7 @@ public class TestRailUtil {
 		JSONObject testRailObj = new JSONObject();
 		JSONObject testRunBlock=new JSONObject();
 		try {
-			testRunBlock = tr.addTestRun(ProjectID, SuiteID,currentTimeStamp);
+			testRunBlock = tr.addTestRun(ProjectID, SuiteID, currentTimeStamp, runName);
 		} catch (Throwable e) {
 		    LOG.error(Log4jUtil.getStackTrace(e));
             throw new RuntimeException(e);
