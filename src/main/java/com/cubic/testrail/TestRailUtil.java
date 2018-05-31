@@ -726,4 +726,45 @@ public class TestRailUtil {
         
         return testClassSet;
     }
+    
+    /**
+     * Utility that creates the testRun.json contents to filter out test cases for a TestRail Test Run, by
+     * only including those test cases that are in the current TestNG suite being executed
+     * @param context
+     * @param projectID
+     * @param suiteID
+     */
+    @SuppressWarnings("unchecked")
+    public static void generateTestRunJSONFromTestNG(ITestContext context, String projectID, String suiteID) {
+        HashSet<String> testClassSet = null;
+        
+        try {
+            testClassSet = TestRailUtil.getTestClassListFromTestNG(context);
+            
+            JSONArray testRailCaseIDs = new JSONArray();
+            
+            // Get "reduced" JSONObject with ONLY test cases found in the TestNG.xml Suite
+            JSONObject MyData = TestRailUtil.createTestClassListFromTestSet(testClassSet, projectID, suiteID);
+            
+            testRailCaseIDs = (JSONArray) MyData.get("TestRailCaseIDs");            // Get TestRail IDs for the above Classes (Tests)
+            
+            JSONParser parser = new JSONParser();
+            String testRunPostRequestJSON = FileUtil.readFile(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH + GenericConstants.TEST_RAIL_TEST_RUN_TEMPLATE_JSON);
+
+            Object obj = parser.parse(testRunPostRequestJSON);
+            JSONObject jsonObject = (JSONObject) obj;
+            
+            jsonObject.put("case_ids", testRailCaseIDs);
+
+            // Write to JSON file containing test cases/classes to run and update test results in TestRail
+            FileWriter file = new FileWriter(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH + GenericConstants.TEST_RAIL_TEST_RUN_TEMPLATE_JSON);
+            file.write(jsonObject.toJSONString());
+            file.flush();
+            file.close();
+        }
+        catch (Exception e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
+        }
+    }
 }
