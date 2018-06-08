@@ -113,20 +113,29 @@ public class TestRailUtil {
 	 * POST method to add test runs for test cases available under specified Suite in specified Project 
 	 * @param projectID
 	 * @param suiteID
+	 * @param currentTimeStamp
+	 * @param runName
 	 * @return
 	 * @throws Throwable
 	 * @author Cigniti
 	 */
 	@SuppressWarnings("unchecked")
-	private JSONObject addTestRun(String projectID,String suiteID,Date currentTimeStamp) throws Throwable{
+	private JSONObject addTestRun(String projectID, String suiteID, Date currentTimeStamp, String runName) throws Throwable{
 		JSONParser parser = new JSONParser();
 		JSONArray testCases= getAllTestCasesOfSuite(projectID, suiteID);
 		String testRunPostRequestJSON = FileUtil.readFile(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH+GenericConstants.TEST_RAIL_TEST_RUN_TEMPLATE_JSON);
 		String testRunPostRequestResetJSON = testRunPostRequestJSON;
 		String testCaseListJSON = FileUtil.readFile(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH+GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON);
 		testRunPostRequestJSON=testRunPostRequestJSON.replaceAll("<suite_id>", suiteID);
-		testRunPostRequestJSON=testRunPostRequestJSON.replaceAll("<rand>", ""+currentTimeStamp.toString().replaceAll(":", "_"));
-
+		
+		// Differentiate with "Run Name" if running multiple XML TestNG suites out of the same TestNG.xml file (if applicable)
+		if (runName != null && !runName.isEmpty()) {
+		    testRunPostRequestJSON=testRunPostRequestJSON.replaceAll("<rand>", runName + " " + currentTimeStamp.toString().replaceAll(":", "_"));
+		}
+		else {
+		    testRunPostRequestJSON=testRunPostRequestJSON.replaceAll("<rand>", "" + currentTimeStamp.toString().replaceAll(":", "_"));
+		}
+		
 		JSONObject testRuns = null;
 		Object obj = parser.parse(testRunPostRequestJSON);
 		Object testCaseObj = parser.parse(testCaseListJSON);
@@ -341,9 +350,10 @@ public class TestRailUtil {
 	 * @param ProjectID
 	 * @param SuiteID
 	 * @param currentTimeStamp
+	 * @param runName
 	 */
 	@SuppressWarnings("unchecked")
-	public static void generateTestRunsForTestCases(String ProjectID,String SuiteID,Date currentTimeStamp) {
+	public static void generateTestRunsForTestCases(String ProjectID, String SuiteID, Date currentTimeStamp, String runName) {
 
 		TestRailUtil tr=new TestRailUtil(propTable.get("Test_Rail_Base_Url"),propTable.get("Test_Rail_UserName"),propTable.get("Test_Rail_Password"));
 		try{		
@@ -358,7 +368,7 @@ public class TestRailUtil {
 		JSONObject testRailObj = new JSONObject();
 		JSONObject testRunBlock=new JSONObject();
 		try {
-			testRunBlock = tr.addTestRun(ProjectID, SuiteID,currentTimeStamp);
+			testRunBlock = tr.addTestRun(ProjectID, SuiteID, currentTimeStamp, runName);
 		} catch (Throwable e) {
 		    LOG.error(Log4jUtil.getStackTrace(e));
             throw new RuntimeException(e);
@@ -715,5 +725,46 @@ public class TestRailUtil {
         }  
         
         return testClassSet;
+    }
+    
+    /**
+     * Utility that creates the testRun.json contents to filter out test cases for a TestRail Test Run, by
+     * only including those test cases that are in the current TestNG suite being executed
+     * @param context
+     * @param projectID
+     * @param suiteID
+     */
+    @SuppressWarnings("unchecked")
+    public static void generateTestRunJSONFromTestNG(ITestContext context, String projectID, String suiteID) {
+        HashSet<String> testClassSet = null;
+        
+        try {
+            testClassSet = TestRailUtil.getTestClassListFromTestNG(context);
+            
+            JSONArray testRailCaseIDs = new JSONArray();
+            
+            // Get "reduced" JSONObject with ONLY test cases found in the TestNG.xml Suite
+            JSONObject MyData = TestRailUtil.createTestClassListFromTestSet(testClassSet, projectID, suiteID);
+            
+            testRailCaseIDs = (JSONArray) MyData.get("TestRailCaseIDs");            // Get TestRail IDs for the above Classes (Tests)
+            
+            JSONParser parser = new JSONParser();
+            String testRunPostRequestJSON = FileUtil.readFile(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH + GenericConstants.TEST_RAIL_TEST_RUN_TEMPLATE_JSON);
+
+            Object obj = parser.parse(testRunPostRequestJSON);
+            JSONObject jsonObject = (JSONObject) obj;
+            
+            jsonObject.put("case_ids", testRailCaseIDs);
+
+            // Write to JSON file containing test cases/classes to run and update test results in TestRail
+            FileWriter file = new FileWriter(GenericConstants.TEST_CASES_TO_BE_EXECUTED_JSON_FILE_PATH + GenericConstants.TEST_RAIL_TEST_RUN_TEMPLATE_JSON);
+            file.write(jsonObject.toJSONString());
+            file.flush();
+            file.close();
+        }
+        catch (Exception e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+            throw new RuntimeException(e);
+        }
     }
 }
