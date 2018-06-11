@@ -49,7 +49,7 @@ public class StringUtil {
 	 * @param numberOfCharacters of (int), length Number of characters specified
 	 * @return String indicating the value of randomAlphaNumeric string
 	 */
-	public static String getRandomAlphNumeircString(int numberOfCharacters) {
+	public static String getRandomAlphanumericString(int numberOfCharacters) {
 		String alphaNum = null;
 		try {
 

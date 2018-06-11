@@ -99,7 +99,7 @@ public class IntegerUtil {
      * @return randomDouble value
      */
 
-     public static Double gteRandomDouble(int chrlen) throws Exception
+     public static Double getRandomDouble(int chrlen) throws Exception
      {
         String minval = "1";
         String maxval = "9";
