@@ -56,7 +56,76 @@ public class IntegerUtil {
         }
         return randomDouble;
     }
-}
+
+
+
+    /**
+     * Gets randomInteger (user defined)of given actual context   //br
+     *
+     * @param chrlen Number of characters
+     * @return Integer value
+     */
+
+    public static int getRandomInteger(int chrlen) throws Exception {
+        String minval = "1";
+        String maxval = "9";
+        int min = 0;
+        int max = 0;
+        int randomInt = 0;
+        if (chrlen > 1) {
+            int i;
+            for(i=0; i<chrlen-1; i++) {
+                minval = minval+'0';
+                maxval = maxval+'9';
+            }
+            min = Integer.parseInt(minval);
+            max = Integer.parseInt(maxval);
+        }
+
+        try {
+            randomInt = RandomUtils.nextInt(min,max);
+        }
+        catch (Exception e) {
+        LOG.error(Log4jUtil.getStackTrace(e));
+        }
+        return randomInt;
+    }
+
+
+    /**
+     * Gets randomDouble(user defined)of given actual context   //br
+     *
+     * @param chrlen Number of characters
+     * @return randomDouble value
+     */
+
+     public static Double gteRandomDouble(int chrlen) throws Exception
+     {
+        String minval = "1";
+        String maxval = "9";
+        int min = 0;
+        int max = 0;
+        Double randomDouble = 0.0;
+        double[] gaussians  = new double[10];
+        if (chrlen >1){
+             for (int i=0;i<chrlen-1;i++)
+            {
+           minval = minval+'0';
+           maxval = maxval+'9';
+             }
+             min = Integer.parseInt(minval);
+             max = Integer.parseInt(maxval);
+              }
+       try{
+            randomDouble = RandomUtils.nextDouble(min,max);
+       }
+       catch (Exception e) {
+           LOG.error(Log4jUtil.getStackTrace(e));
+       }
+       return randomDouble;
+       }
+    }
+
 
 
 
