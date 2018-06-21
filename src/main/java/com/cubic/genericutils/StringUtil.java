@@ -10,7 +10,7 @@ public class StringUtil {
 	
 	/**
 	 * Replaces the regular expression values with client required values
-	 * 
+	 *
 	 * @param text value of content
 	 * @param pattern of type (String), regular expression of actual value
 	 * @param replaceWith of (String), value to replace the actual
@@ -43,11 +43,60 @@ public class StringUtil {
 		}
 		return flag;
 	}
-	
+
 	/**
-	 * getRandomString, Get random String
-	 * 
-	 * @param noOfCharacters of (int), Number of characters to get randomly
+	 * Get RandomAlphaNumeric of given actual string    //br
+	 * @param numberOfCharacters of (int), length Number of characters specified
+	 * @return String indicating the value of randomAlphaNumeric string
+	 */
+	public static String getRandomAlphanumericString(int numberOfCharacters) {
+		String alphaNum = null;
+		try {
+
+			alphaNum = RandomStringUtils.randomAlphanumeric(numberOfCharacters);
+		}
+		catch (Exception e) {
+			LOG.error(Log4jUtil.getStackTrace(e));
+		}
+			return alphaNum;
+
+		}
+    /**
+     * Gets randomString of given actual context //br
+     * @param minNumberOfCharacters length of the string
+     * @param maxNumberOfCharacters  length of the string
+     * @return String indicating the random string
+     */
+    public static String getRandomString(int minNumberOfCharacters,int maxNumberOfCharacters) {
+        String randomString = null;
+        try {
+            randomString = RandomStringUtils.randomAlphabetic(minNumberOfCharacters, maxNumberOfCharacters);
+        } catch (Exception e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+
+        }
+        return randomString;
+    }
+	/**
+	 * Gets randomAlphanumeric string of given actual context //br
+	 * @param minNumberOfCharacters length of the string
+	 * @param maxNumberOfCharacters  length of the string
+	 * @return String indicating the randomAlphaNumeric string
+	 */
+    public static String getRandomAlphanumericString(int minNumberOfCharacters,int maxNumberOfCharacters) {
+        String randomAlphaNumeric = null;
+        try {
+            randomAlphaNumeric = RandomStringUtils.randomAlphanumeric(minNumberOfCharacters, maxNumberOfCharacters);
+        } catch (Exception e) {
+            LOG.error(Log4jUtil.getStackTrace(e));
+
+        }
+        return randomAlphaNumeric;
+    }
+
+	/**
+	 * Gets randomString of given actual context //br
+	 * @param noOfCharacters of (int)
 	 * @return String indicating the value of random string
 	 */
 	public static String getRandomString(int noOfCharacters){
@@ -60,7 +109,7 @@ public class StringUtil {
 		return text;
 	}
 
-	 
+
 	/**
 	 * Gets the Value last digits (as user defined) of a String 
 	 * 
