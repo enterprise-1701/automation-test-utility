@@ -622,17 +622,16 @@ public class TestRailUtil {
 		System.out.println("test_Rail_Integration_Enable_Flag::::: "+test_Rail_Integration_Enable_Flag);
 		System.out.println("projectID::::: "+projectID);
 		System.out.println("suiteID::::: "+suiteID);
-		if((propTable.get("Test_Rail_Integration_Enable_Flag")==null || propTable.get("Test_Rail_Integration_Enable_Flag").equalsIgnoreCase("false"))
-				&& (test_Rail_Integration_Enable_Flag == null 
-						|| test_Rail_Integration_Enable_Flag.equals("%test_Rail_Integration_Enable_Flag%") 
-						|| test_Rail_Integration_Enable_Flag.equals("${test_Rail_Integration_Enable_Flag}")
-						|| test_Rail_Integration_Enable_Flag.equals("false"))){
-			testRailFlag=false;
-		}else if(test_Rail_Integration_Enable_Flag!=null && test_Rail_Integration_Enable_Flag.equals("true")){
-			testRailFlag=true;
-			}else if(propTable.get("Test_Rail_Integration_Enable_Flag").equalsIgnoreCase("true")){
-				testRailFlag=true;
-			}
+
+		String genericFrameworkConfigTestRailEnableFlag = propTable.getOrDefault("Test_Rail_Integration_Enable_Flag", null);
+
+        if(test_Rail_Integration_Enable_Flag!=null && test_Rail_Integration_Enable_Flag.equalsIgnoreCase("true")){
+            testRailFlag=true;
+        }else if(test_Rail_Integration_Enable_Flag == null && (genericFrameworkConfigTestRailEnableFlag != null && genericFrameworkConfigTestRailEnableFlag.equalsIgnoreCase("true"))){
+            testRailFlag=true;
+        }else {
+            testRailFlag=false;
+        }
 		if(testRailFlag){
 			try{
 				System.out.println(":::Project ID:::::"+projectID);
