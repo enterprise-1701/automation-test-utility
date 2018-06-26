@@ -142,14 +142,21 @@ public class DataBaseUtil {
                      // DB Role only applies to ORACLE
                      LOG.info("+++++++++ DB Role: " + dbRole + " +++++++++++++++++");
                      prop = new Properties();
-                     
+
                      prop.put("user", dbUsername);
                      prop.put("password", dbPassword);
                      prop.put("internal_logon", dbRole);
                      connection = DriverManager.getConnection(dbUrl, prop);
                  }
                  else {
-                     connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+                     int retryCount = 0;
+                     while (connection == null && retryCount != 10)
+                         try {
+                             connection = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+                         }catch (java.sql.SQLRecoverableException error) {
+                             retryCount++;
+                             System.out.println("connection error, retry attempt number " + retryCount);
+                         }
                  }
              }
                  
