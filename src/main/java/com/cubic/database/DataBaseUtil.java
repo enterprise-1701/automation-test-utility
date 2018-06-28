@@ -439,4 +439,12 @@ public class DataBaseUtil {
         LOG.info("++++++++ TOTAL DB Connections: " + totalConnections + " -- Current Connection Count: " + openConnectionCount);
         return totalConnections;
     }
+    
+    /**
+     * Utility to reset the connection count (open and total) to zero
+     */
+    public static void resetConnectionCount() {
+        openConnectionCount = 0;
+        totalConnections = 0;
+    }
 }
