@@ -5,7 +5,12 @@ public enum TestStatus {
 	FAIL("failed","5"),
 	BLOCKED("blocked","2"),
 	UNTESTED("untested","3"),
-	RETEST("retest","4");
+	RETEST("retest","4"),
+	NOT_APPLICABLE("custom_status1","6"),
+	CONDITIONALLY_PASSED("conditonally_passed","7"),
+	NOT_COMPLETED("not_completed","8"),
+	FIELD_TEST_REQUIRED("custom_status4","9"),
+	CARRIED_FORWARD("carried_forward","10");
 	
 	String status;
 	String code;

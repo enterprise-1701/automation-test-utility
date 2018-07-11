@@ -26,7 +26,7 @@ import com.cubic.logutils.Log4jUtil;
 
 public class TestRailUtil {
 
-    public static final String CLASS_NAME = "TestScript_Driver";
+    public static final String CLASS_NAME = "TestRailUtil";
     private static final Logger LOG = Logger.getLogger(CLASS_NAME);
     
 	public APIClient trclient=null;
@@ -243,7 +243,9 @@ public class TestRailUtil {
 	private void updateResultOfTestID(String testID,String status,String comment) throws MalformedURLException, IOException, APIException{
 		JSONObject testResult= new JSONObject();
 		if(status==null){
-			testResult.put("status_id", TestStatus.UNTESTED.getCode().toString());
+		    // UNTESTED is currently unsupported by the TestRail API v2.  Using BLOCKED instead
+			testResult.put("status_id", TestStatus.BLOCKED.getCode().toString());
+			testResult.put("comment", "Test status was NULL, setting to BLOCKED");
 		}else if(status.equalsIgnoreCase("pass")){
 			testResult.put("status_id", TestStatus.PASS.getCode().toString());
 		}else if(status.equalsIgnoreCase("fail")){
@@ -521,7 +523,8 @@ public class TestRailUtil {
 
 			JSONObject testResult= new JSONObject();
 			if(resultStatus==null){
-				testResult.put("status_id", TestStatus.UNTESTED.getCode().toString());
+			    // UNTESTED is currently unsupported by the TestRail API v2.  Using BLOCKED instead
+				testResult.put("status_id", TestStatus.BLOCKED.getCode().toString());
 				testResult.put("comment", comment);
 			}else if(resultStatus.equalsIgnoreCase("pass")){
 				testResult.put("status_id", TestStatus.PASS.getCode().toString());
