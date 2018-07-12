@@ -243,9 +243,9 @@ public class TestRailUtil {
 	private void updateResultOfTestID(String testID,String status,String comment) throws MalformedURLException, IOException, APIException{
 		JSONObject testResult= new JSONObject();
 		if(status==null){
-		    // UNTESTED is currently unsupported by the TestRail API v2.  Using BLOCKED instead
-			testResult.put("status_id", TestStatus.BLOCKED.getCode().toString());
-			testResult.put("comment", "Test status was NULL, setting to BLOCKED");
+		    // UNTESTED is currently unsupported by the TestRail API v2.  Using FAIL instead and adding an extra comment to help with debugging
+			testResult.put("status_id", TestStatus.FAIL.getCode().toString());
+			testResult.put("comment", "Automated test stopped execution prior to the first assert, setting status to FAIL");
 		}else if(status.equalsIgnoreCase("pass")){
 			testResult.put("status_id", TestStatus.PASS.getCode().toString());
 		}else if(status.equalsIgnoreCase("fail")){
@@ -523,9 +523,9 @@ public class TestRailUtil {
 
 			JSONObject testResult= new JSONObject();
 			if(resultStatus==null){
-			    // UNTESTED is currently unsupported by the TestRail API v2.  Using BLOCKED instead
-				testResult.put("status_id", TestStatus.BLOCKED.getCode().toString());
-				testResult.put("comment", comment);
+			    // UNTESTED is currently unsupported by the TestRail API v2.  Using FAIL instead and adding an extra comment to help with debugging
+	            testResult.put("status_id", TestStatus.FAIL.getCode().toString());
+	            testResult.put("comment", "Automated test stopped execution prior to the first assert, setting status to FAIL");
 			}else if(resultStatus.equalsIgnoreCase("pass")){
 				testResult.put("status_id", TestStatus.PASS.getCode().toString());
 				testResult.put("comment", comment);
